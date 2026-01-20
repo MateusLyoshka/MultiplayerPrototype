@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://b5whmnhqi3uqc"]
+
+[ext_resource type="PackedScene" uid="uid://8bbtnf8610k1" path="res://example/scenes/low_level_ui.tscn" id="1_ot5o1"]
+[ext_resource type="PackedScene" uid="uid://bur32xp336igb" path="res://example/scenes/player_spawner.tscn" id="2_pavoy"]
+
+[node name="level" type="Node2D"]
+
+[node name="LowLevelUI" parent="." instance=ExtResource("1_ot5o1")]
+offset_left = 2.0
+offset_top = 2.0
+offset_right = 2.0
+offset_bottom = 2.0
+
+[node name="player_spawner" parent="." instance=ExtResource("2_pavoy")]

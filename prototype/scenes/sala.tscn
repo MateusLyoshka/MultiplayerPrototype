@@ -1,0 +1,38 @@
+[gd_scene load_steps=2 format=3 uid="uid://5bwjrpxewel"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_v60l3"]
+bg_color = Color(0.31411904, 0.49391532, 0.33711186, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0, 0, 0, 1)
+
+[node name="PanelContainer" type="PanelContainer"]
+custom_minimum_size = Vector2(0, 120)
+theme_override_styles/panel = SubResource("StyleBoxFlat_v60l3")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Players" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+text = "Mateus Santos Fernandes
+Santos Claudio
+Fernandes Cleberson
+Carlos Celinos"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 10
+
+[node name="Label" type="Label" parent="HBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "4/4 jogadores"
+
+[node name="Join" type="Button" parent="HBoxContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 6
+text = "Entrar"

@@ -1,0 +1,26 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="LowLevel"
+run/main_scene="uid://8bbtnf8610k1"
+config/features=PackedStringArray("4.5", "C#", "Forward Plus")
+config/icon="res://icon.svg"
+
+[autoload]
+
+NetworkHandler="*res://example/scripts/network_handler.gd"
+ClientNetworkGlobals="*res://example/scripts/client_network_globals.gd"
+ServerNetworkGlobals="*res://example/scripts/server_network_globals.gd"
+
+[dotnet]
+
+project/assembly_name="LowLevel"
