@@ -20,7 +20,12 @@ config/icon="res://icon.svg"
 NetworkHandler="*res://example/scripts/network_handler.gd"
 ClientNetworkGlobals="*res://example/scripts/client_network_globals.gd"
 ServerNetworkGlobals="*res://example/scripts/server_network_globals.gd"
+ProtNetworkHandler="*res://prototype/scripts/network_handler.gd"
 
 [dotnet]
 
 project/assembly_name="LowLevel"
+
+[rendering]
+
+textures/canvas_textures/default_texture_filter=0

@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://cg3be3tn5ksqa"]
+[gd_scene load_steps=3 format=3 uid="uid://cg3be3tn5ksqa"]
 
 [ext_resource type="PackedScene" uid="uid://5bwjrpxewel" path="res://prototype/scenes/sala.tscn" id="1_6n8ri"]
+[ext_resource type="Script" uid="uid://du5effsb6eepq" path="res://prototype/scenes/multijogador.gd" id="1_827np"]
 
 [node name="Control" type="Control"]
 layout_mode = 3
@@ -9,6 +10,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_827np")
 
 [node name="Panel" type="Panel" parent="."]
 layout_mode = 1
@@ -26,7 +28,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Button" type="Button" parent="Panel/VBoxContainer"]
+[node name="BackToMenu" type="Button" parent="Panel/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 0
 text = "Voltar"
@@ -42,7 +44,10 @@ size_flags_horizontal = 3
 [node name="PanelContainer" parent="Panel/VBoxContainer/ScrollContainer/VBoxContainer" instance=ExtResource("1_6n8ri")]
 layout_mode = 2
 
-[node name="Button2" type="Button" parent="Panel/VBoxContainer"]
+[node name="NewRoom" type="Button" parent="Panel/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 8
 text = "Nova sala"
+
+[connection signal="button_down" from="Panel/VBoxContainer/BackToMenu" to="." method="_on_back_to_menu_button_down"]
+[connection signal="button_down" from="Panel/VBoxContainer/NewRoom" to="." method="_on_new_room_button_down"]
