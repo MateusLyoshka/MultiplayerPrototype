@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://cg3be3tn5ksqa"]
 
 [ext_resource type="PackedScene" uid="uid://5bwjrpxewel" path="res://prototype/scenes/sala.tscn" id="1_6n8ri"]
-[ext_resource type="Script" uid="uid://du5effsb6eepq" path="res://prototype/scenes/multijogador.gd" id="1_827np"]
+[ext_resource type="Script" uid="uid://du5effsb6eepq" path="res://prototype/scripts/multijogador.gd" id="1_827np"]
 
 [node name="Control" type="Control"]
 layout_mode = 3

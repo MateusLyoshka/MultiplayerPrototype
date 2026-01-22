@@ -1,10 +1,12 @@
 extends Node
 
 var server_connection: ENetConnection
+var server_peer: ENetPacketPeer
 
 # Server variables
 var is_server: bool
 var avaliable_peer_ids: Array = range(255, -1, -1)
+var peers_connected: Dictionary[int, ENetPacketPeer]
 
 func _ready() -> void:
 	var args = OS.get_cmdline_args()
@@ -24,8 +26,7 @@ func handle_events() -> void:
 		var peer_sender: ENetPacketPeer = packet_event[1]
 		match event_type:
 			ENetConnection.EVENT_ERROR:
-				#print("Packet received error")
-				pass
+				print("Packet received error")
 			ENetConnection.EVENT_CONNECT:
 				if is_server:
 					peer_connected(peer_sender)
@@ -34,6 +35,8 @@ func handle_events() -> void:
 			ENetConnection.EVENT_DISCONNECT:
 				if is_server:
 					peer_disconnected(peer_sender)
+				else:
+					client_disconnection()
 			ENetConnection.EVENT_RECEIVE:
 				print("Packet received")
 					
@@ -59,7 +62,7 @@ func peer_disconnected(peer: ENetPacketPeer) -> void:
 	var peer_id: int = peer.get_meta("id")
 	avaliable_peer_ids.push_back(peer_id)
 	
-	print("Peer: ", peer_id, " succesfully desconnected")
+	print("Peer: ", peer_id, " succesfully disconnected")
 
 func start_client(ip_address: String, port: int) -> void:
 	server_connection = ENetConnection.new()
@@ -67,8 +70,11 @@ func start_client(ip_address: String, port: int) -> void:
 	if error:
 		print("Host creation erro: ", error)
 		return
-	else:
-		server_connection.connect_to_host(ip_address, port)
+	server_peer = server_connection.connect_to_host(ip_address, port)
 
 func client_connection() -> void:
 	print("Peer connected (peer side)")
+
+func client_disconnection() -> void:
+	print("Peer soccesfully disconnected from server!")
+	server_connection = null
