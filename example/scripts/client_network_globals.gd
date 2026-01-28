@@ -7,8 +7,8 @@ signal handle_player_position(player_position: PlayerPosition)
 var id: int = -1
 var remote_ids: Array[int]
 
-func _ready() -> void:
-	NetworkHandler.on_client_packet.connect(client_packet_handle)
+#func _ready() -> void:
+	#NetworkHandler.on_client_packet.connect(client_packet_handle)
 
 
 func client_packet_handle(data: PackedByteArray) -> void:
@@ -16,14 +16,14 @@ func client_packet_handle(data: PackedByteArray) -> void:
 	
 	match packet_type:
 		PacketInfo.PACKET_TYPE.ID_ASSIGNMENT:
-			manage_ids(IDAssignment.create_from_data(data))
+			manage_ids(PeerId.create_from_data(data))
 		PacketInfo.PACKET_TYPE.PLAYER_POSITION:
 			handle_player_position.emit(PlayerPosition.create_from_data(data))
 		_:
 			push_error("Packet type with index ", data[0], " unhandled!")
 
 
-func manage_ids(id_assignment: IDAssignment) -> void:
+func manage_ids(id_assignment: PeerId) -> void:
 	if id == -1:
 		id = id_assignment.id
 		handle_local_id_assignment.emit(id_assignment.id)

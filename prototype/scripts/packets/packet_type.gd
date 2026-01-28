@@ -1,9 +1,13 @@
 class_name PacketTypeClass
 
 enum PACKET_TYPE {
-	PEER_ID,
-	START_ROOM,
-	JOIN_ROOM
+	PEER_ID = 0,
+	START_ROOM = 10,
+	JOIN_REQUEST = 15,
+	JOIN_ROOM = 20,
+	QUIT_ROOM = 30,
+	REFRESH = 40,
+	REFRESH_REQUEST = 50
 }
 
 var packet_type: PACKET_TYPE
