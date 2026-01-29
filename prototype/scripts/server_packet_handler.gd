@@ -12,18 +12,37 @@ func client_packet_handler(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 	match packet_type:
 		PacketTypeClass.PACKET_TYPE.PEER_ID:
 			print("pacote IP")
-		PacketTypeClass.PACKET_TYPE.START_ROOM:
-			start_room(peer)
+		PacketTypeClass.PACKET_TYPE.ROOM_REQUEST:
+			room_request(peer, data)
 		PacketTypeClass.PACKET_TYPE.JOIN_ROOM:
 			pass
+		PacketTypeClass.PACKET_TYPE.JOIN_REQUEST:
+			join_request(peer, data)
 		PacketTypeClass.PACKET_TYPE.QUIT_ROOM:
 			pass
 		PacketTypeClass.PACKET_TYPE.REFRESH:
 			pass
 		PacketTypeClass.PACKET_TYPE.REFRESH_REQUEST:
 			send_refresh(peer)
+	
+func send_refresh(peer: ENetPacketPeer) -> void:
+	RefreshClass.create(created_rooms_id).send(peer)
 
-func start_room(peer: ENetPacketPeer) -> void:
+func join_request(peer: ENetPacketPeer, data: PackedByteArray) -> void:
+	var request: JoinRequestClass = JoinRequestClass.create_from_data(data)
+	var room: int = request.room
+	if(rooms[room].size() > 4): 
+		print("The room is full!")
+		return
+	elif(rooms[room].size() == 0):
+		print("The room was closed!")
+		return
+	rooms[room].append(peer)
+	print("All rooms: ", rooms)
+
+func room_request(peer: ENetPacketPeer, data: PackedByteArray) -> void:
+	var request: RoomRequestClass = RoomRequestClass.create_from_data(data)
+	var requester_id: int = request.id
 	if num_room.is_empty():
 		print("Error: maximum rooms limit exceded!")
 		return
@@ -31,7 +50,5 @@ func start_room(peer: ENetPacketPeer) -> void:
 	var members: Array[ENetPacketPeer] = [peer]
 	created_rooms_id.append(room_id)
 	rooms[room_id] = members
-	StartRoomClass.create(room_id).send(peer)
+	StartRoomClass.create(room_id, requester_id).send(peer)
 	
-func send_refresh(peer: ENetPacketPeer) -> void:
-	RefreshClass.create(created_rooms_id).send(peer)

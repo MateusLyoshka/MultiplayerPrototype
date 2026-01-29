@@ -3,14 +3,12 @@ class_name RefreshClass extends PacketTypeClass
 var rooms_id: Array[int]
 
 static func create(rooms: Array[int]) -> RefreshClass:
-	var refresh: RefreshClass = RefreshClass.new()
-	refresh.flag = ENetPacketPeer.FLAG_RELIABLE
-	refresh.packet_type = PACKET_TYPE.REFRESH
+	var refresh: RefreshClass = RefreshClass.new(PacketTypeClass.PACKET_TYPE.REFRESH, ENetPacketPeer.FLAG_RELIABLE)
 	refresh.rooms_id = rooms
 	return refresh
 
 static func create_from_data(data: PackedByteArray) -> RefreshClass:
-	var refresh: RefreshClass = RefreshClass.new()
+	var refresh: RefreshClass = RefreshClass.new(PacketTypeClass.PACKET_TYPE.REFRESH, ENetPacketPeer.FLAG_RELIABLE)
 	refresh.decode(data)
 	return refresh
 

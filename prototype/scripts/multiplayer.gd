@@ -12,12 +12,12 @@ func _on_back_to_menu_button_down() -> void:
 	get_tree().change_scene_to_file("res://prototype/scenes/main_menu.tscn")
 
 func _on_new_room_button_down() -> void:
-	StartRoomClass.create(-1).send(ProtNetworkHandler.server_peer)
+	RoomRequestClass.create(ClientPacketHandler.client_id).send(ProtNetworkHandler.server_peer)
 	return
 	#print(ProtNetworkHandler.server_peer)
 	#StartRoomClass.create(get_meta("id")).send(ProtNetworkHandler.server_peer)
 
-func add_room_to_list(room_id: int) -> void:
+func add_room_to_list(owner_id: int, room_id: int) -> void:
 	var room_item: RoomItem = ROOM.instantiate()
 	room_list_container.add_child(room_item)
 	room_item.setup_room(room_id)
