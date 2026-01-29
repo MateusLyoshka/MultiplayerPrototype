@@ -1,4 +1,6 @@
-[gd_scene format=3 uid="uid://bvwfdv6cltko1"]
+[gd_scene load_steps=2 format=3 uid="uid://bvwfdv6cltko1"]
+
+[ext_resource type="PackedScene" uid="uid://dnnk20ejw87e6" path="res://prototype/scenes/pause_control.tscn" id="1_kox51"]
 
 [node name="Control" type="Control"]
 layout_mode = 3
@@ -7,6 +9,9 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="PauseControl" parent="." instance=ExtResource("1_kox51")]
+layout_mode = 1
 
 [node name="Players" type="Label" parent="."]
 layout_mode = 1
