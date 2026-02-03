@@ -11,18 +11,16 @@ config_version=5
 [application]
 
 config/name="LowLevel"
-run/main_scene="uid://8bbtnf8610k1"
+run/main_scene="uid://behkmrjp0si6m"
 config/features=PackedStringArray("4.5", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 
 [autoload]
 
-NetworkHandler="res://example/scripts/network_handler.gd"
-ClientNetworkGlobals="res://example/scripts/client_network_globals.gd"
-ServerNetworkGlobals="res://example/scripts/server_network_globals.gd"
 ProtNetworkHandler="*res://prototype/scripts/network_handler.gd"
 ServerPacketHandler="*res://prototype/scripts/server_packet_handler.gd"
 ClientPacketHandler="*res://prototype/scripts/client_packet_handler.gd"
+HostPacketHandler="*res://prototype/scripts/host_packet_handler.gd"
 
 [dotnet]
 

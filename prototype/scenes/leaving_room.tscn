@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://bvwfdv6cltko1"]
+[gd_scene load_steps=3 format=3 uid="uid://bvwfdv6cltko1"]
 
 [ext_resource type="PackedScene" uid="uid://dnnk20ejw87e6" path="res://prototype/scenes/pause_control.tscn" id="1_kox51"]
+[ext_resource type="Script" uid="uid://dkadrsnrlb7oi" path="res://prototype/scripts/player/spawn_player.gd" id="2_5fvyf"]
 
 [node name="Control" type="Control"]
 layout_mode = 3
@@ -11,6 +12,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="PauseControl" parent="." instance=ExtResource("1_kox51")]
+visible = false
 layout_mode = 1
 
 [node name="Players" type="Label" parent="."]
@@ -36,3 +38,6 @@ offset_top = -23.0
 grow_horizontal = 0
 grow_vertical = 0
 text = "Aguarde"
+
+[node name="PlayerSpawner" type="Node" parent="."]
+script = ExtResource("2_5fvyf")
