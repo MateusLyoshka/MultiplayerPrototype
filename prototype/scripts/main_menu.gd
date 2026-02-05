@@ -1,11 +1,35 @@
 extends Control
 
 const MULTIJOGADOR = preload("uid://cg3be3tn5ksqa")
+@onready var start: Button = $Panel/MarginContainer/HBoxContainer/VBoxContainer/Start
+@onready var line_edit: LineEdit = $Panel/MarginContainer/HBoxContainer/VBoxContainer/LineEdit
+@onready var exit: Button = $Panel/MarginContainer/HBoxContainer/VBoxContainer/Exit
+
+var original_text: String = ""
+
+func _ready() -> void:
+	ProtNetworkHandler.on_peer_connected.connect(load_multiplayer_scene)
+	ProtNetworkHandler.on_connection_error.connect(on_connection_error)
+	original_text = start.text
+
 
 func _on_start_pressed() -> void:
-	get_tree().change_scene_to_file("res://prototype/scenes/multiplayer.tscn")
-	ProtNetworkHandler.start_client("127.0.0.1", 42069)
-
+	ProtNetworkHandler.start_client(line_edit.text, 42069)
+	line_edit.editable = false
+	start.disabled = true
+	exit.disabled = true
+	start.text = "loading..."
 
 func _on_exit_button_down() -> void:
 	get_tree().quit()
+
+func on_connection_error() -> void:
+	print("Erro ao tentar se conectar")
+	line_edit.editable = true
+	start.disabled = false
+	exit.disabled = false
+	start.text = original_text
+
+func load_multiplayer_scene() -> void:
+	get_tree().change_scene_to_file("res://prototype/scenes/multiplayer.tscn")
+	

@@ -14,7 +14,7 @@ var is_host: bool
 var avaliable_player_ids: Array = range(3, -1, -1)
 
 # Client variables
-var server_peer: ENetPacketPeer
+var host_peer: ENetPacketPeer
 
 func _process(_delta: float) -> void:
 	if host_connection == null: return
@@ -37,11 +37,11 @@ func handle_events() -> void:
 				if is_host:
 					peer_disconnected(peer_sender)
 				else:
-					player_disconnection()
+					host_disconnection()
+					return
 			ENetConnection.EVENT_RECEIVE:
 				if is_host:
-					#print("Packet received")
-					from_player_packet.emit(peer_sender ,peer_sender.get_packet())
+					from_player_packet.emit(peer_sender, peer_sender.get_packet())
 				else:
 					from_host_packet.emit(peer_sender.get_packet())
 					
@@ -58,7 +58,7 @@ func start_host(ip_address: String = "127.0.0.1", port: int = 42069) -> void:
 		print("Host started!")
 		is_host = true
 
-func player_connected(peer: ENetPacketPeer) -> void:
+func player_connected(_peer: ENetPacketPeer) -> void:
 	print("New player connected")
 
 func peer_disconnected(peer: ENetPacketPeer) -> void:
@@ -73,12 +73,13 @@ func start_player(ip_address: String, port: int) -> void:
 	if error:
 		print("Host creation erro: ", error)
 		return
-	server_peer = host_connection.connect_to_host(ip_address, port)
+	host_peer = host_connection.connect_to_host(ip_address, port)
+	print("Host peer and my id: ", host_peer, ClientPacketHandler.client_id)
 
 func player_connection() -> void:
 	#print("Peer connected (peer side)")
 	return
 
-func player_disconnection() -> void:
-	print("Peer soccesfully disconnected from server!")
+func host_disconnection() -> void:
+	print("Host disconnected")
 	host_connection = null

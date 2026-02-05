@@ -26,13 +26,12 @@ func client_packet_handler(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 func save_room_info(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 	var room_packet: RoomInfoClass = RoomInfoClass.create_from_data(data)
 	var room_id: int = room_packet.room_id
-	var host_ip: String = room_packet.host_ip
-	var room_port: int = room_packet.room_port
-	var new_room: RoomStorage = RoomStorage.new(host_ip, room_port, peer)
+	var new_room: RoomStorage = RoomStorage.new(room_packet.host_ip, room_packet.room_port, peer)
+	new_room.add_player_id(room_packet.player_id)
+	new_room.add_player(peer)
 	created_rooms_id.append(room_id)
 	rooms[room_id] = new_room
-	rooms[room_id].add_player(peer)
-	print("Info saved")
+	print("(Server handler) info saved: ", rooms)
 
 func send_refresh(peer: ENetPacketPeer) -> void:
 	RefreshClass.create(created_rooms_id).send(peer)
@@ -46,10 +45,7 @@ func join_request(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 	if(rooms[room].current_players.size() > 4): 
 		print("The room is full!")
 		return
-	#elif(!is_peer_owner(room, peer) and rooms[room].is_empty()):
-		#print("The room was closed!")
-		#return
-	JoinRoomClass.create(room).send(peer)
+	RoomInfoClass.create(0, room, rooms[room].port, rooms[room].host_ip, rooms[room].current_players_id).send(peer)
 	rooms[room].add_player(peer)
 	print("(Server handler) All rooms: ", rooms)
 
@@ -66,11 +62,9 @@ func quit_room_request(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 	var quit_request: QuitRequestClass = QuitRequestClass.create_from_data(data)
 	var room_req_id = quit_request.room_id
 	print("(Server handle) quiting room: ", quit_request.room_id)
-	rooms[room_req_id].remove_player(peer)
-	#if rooms[room_req_id].is_empty():
-		#rooms.erase(room_req_id)
-		#created_rooms_id.erase(room_req_id)
-		#num_room.push_back(room_req_id)
+	if peer == rooms[room_req_id].host_peer:
+		rooms.erase(room_req_id)
+		created_rooms_id.erase(room_req_id)
 	QuitRoomClass.create().send(peer)
 
 #func is_peer_owner(room_id: int, peer: ENetPacketPeer) -> bool:

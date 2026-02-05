@@ -5,6 +5,8 @@ signal from_server_packet(data: PackedByteArray)
 
 # Client signals
 signal from_client_packet(peer: ENetPacketPeer, data: PackedByteArray)
+signal on_peer_connected()
+signal on_connection_error
 
 # Client Server variables
 var server_connection: ENetConnection
@@ -46,6 +48,7 @@ func handle_events() -> void:
 					peer_disconnected(peer_sender)
 				else:
 					client_disconnection()
+					return
 			ENetConnection.EVENT_RECEIVE:
 				if is_server:
 					#print("Packet received")
@@ -56,7 +59,7 @@ func handle_events() -> void:
 		packet_event = server_connection.service()
 		event_type = packet_event[0]
 
-func start_server(ip_address: String = "127.0.0.1", port: int = 42069) -> void:
+func start_server(ip_address: String = "192.168.15.6", port: int = 42069) -> void:
 	server_connection = ENetConnection.new()
 	var error: Error = server_connection.create_host_bound(ip_address, port)
 	if error:
@@ -70,12 +73,11 @@ func peer_connected(peer: ENetPacketPeer) -> void:
 	var peer_id: int = avaliable_peer_ids.pop_back()
 	peer.set_meta("id", peer_id)
 	print("Peer: ", peer_id, " succesfully connected")
-	PeerId.create(peer_id).send(peer)
 
 func peer_disconnected(peer: ENetPacketPeer) -> void:
 	var peer_id: int = peer.get_meta("id")
 	avaliable_peer_ids.push_back(peer_id)
-	
+	PeerId.create(peer_id).send(peer)
 	print("Peer: ", peer_id, " succesfully disconnected")
 
 func start_client(ip_address: String, port: int) -> void:
@@ -85,11 +87,19 @@ func start_client(ip_address: String, port: int) -> void:
 		print("Host creation erro: ", error)
 		return
 	server_peer = server_connection.connect_to_host(ip_address, port)
+	server_peer.set_timeout(0, 3000, 5000)
 
 func client_connection() -> void:
+	on_peer_connected.emit()
 	#print("Peer connected (peer side)")
 	return
 
 func client_disconnection() -> void:
-	print("Peer soccesfully disconnected from server!")
-	server_connection = null
+	if server_peer.get_state() == ENetPacketPeer.STATE_DISCONNECTED:
+		print("Connection timeout")
+		server_peer = null
+		server_connection = null
+		get_tree().change_scene_to_file("res://prototype/scenes/mainMenu.tscn")
+		on_connection_error.emit()
+	else:
+		print("Connection timeout with server state: ", server_peer.get_state())

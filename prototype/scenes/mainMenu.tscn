@@ -54,6 +54,11 @@ layout_mode = 2
 theme_override_constants/separation = 18
 alignment = 1
 
+[node name="LineEdit" type="LineEdit" parent="Panel/MarginContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "192.168.15.6"
+placeholder_text = "Server IPv4"
+
 [node name="Seperator2" type="Control" parent="Panel/MarginContainer/HBoxContainer/VBoxContainer"]
 layout_mode = 2
 

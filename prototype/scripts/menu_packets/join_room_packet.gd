@@ -1,6 +1,8 @@
 class_name JoinRoomClass extends PacketTypeClass
 
 var room_id: int
+var host_ip: String
+var port: int
 
 static func create(room_id_: int) -> JoinRoomClass:
 	var new_packet: JoinRoomClass = JoinRoomClass.new(PACKET_TYPE.JOIN_ROOM)
