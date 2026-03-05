@@ -10,8 +10,6 @@ func _ready() -> void:
 func client_packet_handler(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 	var packet_type: int = int(data.decode_u8(0))
 	match packet_type:
-		PacketTypeClass.PACKET_TYPE.PEER_ID:
-			pass
 		PacketTypeClass.PACKET_TYPE.ROOM_REQUEST:
 			room_request(peer, data)
 		PacketTypeClass.PACKET_TYPE.JOIN_REQUEST:
@@ -45,9 +43,9 @@ func join_request(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 	if(rooms[room].current_players.size() > 4): 
 		print("The room is full!")
 		return
-	RoomInfoClass.create(0, room, rooms[room].port, rooms[room].host_ip, rooms[room].current_players_id).send(peer)
+	JoinRoomClass.create(room, rooms[room].port, rooms[room].host_ip, rooms[room].current_players_id).send(peer)
 	rooms[room].add_player(peer)
-	print("(Server handler) All rooms: ", rooms)
+	print("(Server handler) All players in the room: ", rooms[room].current_players_id)
 
 func room_request(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 	var request: RoomRequestClass = RoomRequestClass.create_from_data(data)

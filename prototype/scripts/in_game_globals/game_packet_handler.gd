@@ -59,7 +59,8 @@ func start_host(ip_address: String = "127.0.0.1", port: int = 42069) -> void:
 		is_host = true
 
 func player_connected(_peer: ENetPacketPeer) -> void:
-	print("New player connected")
+	print("(Game network) new player connected")
+	return
 
 func peer_disconnected(peer: ENetPacketPeer) -> void:
 	var player_id: int = peer.get_meta("id")

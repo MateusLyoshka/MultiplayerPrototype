@@ -5,7 +5,7 @@ signal from_server_packet(data: PackedByteArray)
 
 # Client signals
 signal from_client_packet(peer: ENetPacketPeer, data: PackedByteArray)
-signal on_peer_connected()
+signal on_peer_connected
 signal on_connection_error
 
 # Client Server variables
@@ -59,11 +59,12 @@ func handle_events() -> void:
 		packet_event = server_connection.service()
 		event_type = packet_event[0]
 
-func start_server(ip_address: String = "192.168.15.6", port: int = 42069) -> void:
+func start_server(ip_address: String = "192.168.15.5", port: int = 42069) -> void:
 	server_connection = ENetConnection.new()
 	var error: Error = server_connection.create_host_bound(ip_address, port)
-	if error:
-		print("Host bound creation error: ", error)
+	if error != OK:
+		printerr("ERRO FATAL AO CRIAR HOST: ", error)
+		server_connection = null
 		return
 	else:
 		print("Server started!")
@@ -72,7 +73,7 @@ func start_server(ip_address: String = "192.168.15.6", port: int = 42069) -> voi
 func peer_connected(peer: ENetPacketPeer) -> void:
 	var peer_id: int = avaliable_peer_ids.pop_back()
 	peer.set_meta("id", peer_id)
-	print("Peer: ", peer_id, " succesfully connected")
+	print("(Server network) Peer: ", peer_id, " succesfully connected")
 
 func peer_disconnected(peer: ENetPacketPeer) -> void:
 	var peer_id: int = peer.get_meta("id")
