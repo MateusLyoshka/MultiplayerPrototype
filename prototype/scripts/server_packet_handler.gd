@@ -45,6 +45,7 @@ func join_request(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 		return
 	JoinRoomClass.create(room, rooms[room].port, rooms[room].host_ip, rooms[room].current_players_id).send(peer)
 	rooms[room].add_player(peer)
+	rooms[room].add_player_id(request.player_id)
 	print("(Server handler) All players in the room: ", rooms[room].current_players_id)
 
 func room_request(peer: ENetPacketPeer, data: PackedByteArray) -> void:
