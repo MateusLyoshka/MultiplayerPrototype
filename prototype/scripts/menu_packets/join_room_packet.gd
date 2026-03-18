@@ -7,16 +7,16 @@ var host_ip: String
 
 const FIXED_HEADER_SIZE = 6 
 
-static func create(room: int, port: int, ip: String, _remote_ids: Array[int]) -> RoomInfoClass:
-	var new_packet: RoomInfoClass = RoomInfoClass.new(PACKET_TYPE.ROOM_INFO)
+static func create(room: int, port: int, ip: String, _remote_ids: Array[int]) -> JoinRoomClass:
+	var new_packet: JoinRoomClass = JoinRoomClass.new(PACKET_TYPE.ROOM_INFO)
 	new_packet.room_id = room
 	new_packet.room_port = port
 	new_packet.host_ip = ip
 	new_packet.remote_ids = _remote_ids
 	return new_packet
 
-static func create_from_data(data: PackedByteArray) -> RoomInfoClass:
-	var new_packet: RoomInfoClass = RoomInfoClass.new(PACKET_TYPE.ROOM_INFO)
+static func create_from_data(data: PackedByteArray) -> JoinRoomClass:
+	var new_packet: JoinRoomClass = JoinRoomClass.new(PACKET_TYPE.ROOM_INFO)
 	new_packet.decode(data)
 	return new_packet
 

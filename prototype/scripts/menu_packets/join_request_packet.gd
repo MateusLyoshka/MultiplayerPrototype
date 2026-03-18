@@ -7,6 +7,7 @@ static func create(room_id: int, client_id: int) -> JoinRequestClass:
 	var packet: JoinRequestClass = JoinRequestClass.new(PacketTypeClass.PACKET_TYPE.JOIN_REQUEST, ENetPacketPeer.FLAG_RELIABLE)
 	packet.room = room_id
 	packet.client = client_id
+	#print(room_id, client_id, "Join request caras")
 	return packet
 
 static func create_from_data(data: PackedByteArray) -> JoinRequestClass:

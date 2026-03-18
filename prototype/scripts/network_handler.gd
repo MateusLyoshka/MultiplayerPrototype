@@ -52,14 +52,14 @@ func handle_events() -> void:
 			ENetConnection.EVENT_RECEIVE:
 				if is_server:
 					#print("Packet received")
-					from_client_packet.emit(peer_sender ,peer_sender.get_packet())
+					from_client_packet.emit(peer_sender, peer_sender.get_packet())
 				else:
 					from_server_packet.emit(peer_sender.get_packet())
 					
 		packet_event = server_connection.service()
 		event_type = packet_event[0]
 
-func start_server(ip_address: String = "192.168.15.5", port: int = 42069) -> void:
+func start_server(ip_address: String = "192.168.56.1", port: int = 42069) -> void:
 	server_connection = ENetConnection.new()
 	var error: Error = server_connection.create_host_bound(ip_address, port)
 	if error != OK:
@@ -73,12 +73,12 @@ func start_server(ip_address: String = "192.168.15.5", port: int = 42069) -> voi
 func peer_connected(peer: ENetPacketPeer) -> void:
 	var peer_id: int = avaliable_peer_ids.pop_back()
 	peer.set_meta("id", peer_id)
+	PeerId.create(peer_id).send(peer)
 	print("(Server network) Peer: ", peer_id, " succesfully connected")
 
 func peer_disconnected(peer: ENetPacketPeer) -> void:
 	var peer_id: int = peer.get_meta("id")
 	avaliable_peer_ids.push_back(peer_id)
-	PeerId.create(peer_id).send(peer)
 	print("Peer: ", peer_id, " succesfully disconnected")
 
 func start_client(ip_address: String, port: int) -> void:

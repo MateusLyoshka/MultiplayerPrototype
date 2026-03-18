@@ -11,10 +11,12 @@ func _ready() -> void:
 func _on_back_to_menu_button_down() -> void:
 	get_tree().change_scene_to_file("res://prototype/scenes/main_menu.tscn")
 
+	#send a room creation packet to server_packet_handler when the new room button is pressed
 func _on_new_room_button_down() -> void:
 	RoomRequestClass.create(ClientPacketHandler.client_id).send(ProtNetworkHandler.server_peer)
 	return
 
+	#send a refresh packet which returns a list of rooms in the refresh request packet
 func _on_refresh_button_down() -> void:
 	RefreshRequestClass.create().send(ProtNetworkHandler.server_peer)
 

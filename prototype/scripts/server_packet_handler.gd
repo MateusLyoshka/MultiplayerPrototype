@@ -25,8 +25,8 @@ func save_room_info(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 	var room_packet: RoomInfoClass = RoomInfoClass.create_from_data(data)
 	var room_id: int = room_packet.room_id
 	var new_room: RoomStorage = RoomStorage.new(room_packet.host_ip, room_packet.room_port, peer)
-	new_room.add_player_id(room_packet.player_id)
 	new_room.add_player(peer)
+	new_room.add_player_id(room_packet.player_id)
 	created_rooms_id.append(room_id)
 	rooms[room_id] = new_room
 	print("(Server handler) info saved: ", rooms)

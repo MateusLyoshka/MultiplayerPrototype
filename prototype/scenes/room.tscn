@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=3 uid="uid://5bwjrpxewel"]
+[gd_scene format=3 uid="uid://5bwjrpxewel"]
 
 [ext_resource type="Script" uid="uid://g6xo0bjyc18u" path="res://prototype/scripts/room.gd" id="1_82txf"]
 
@@ -10,15 +10,15 @@ border_width_right = 4
 border_width_bottom = 4
 border_color = Color(0, 0, 0, 1)
 
-[node name="PanelContainer" type="PanelContainer"]
+[node name="PanelContainer" type="PanelContainer" unique_id=581480632]
 custom_minimum_size = Vector2(0, 120)
 theme_override_styles/panel = SubResource("StyleBoxFlat_v60l3")
 script = ExtResource("1_82txf")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="."]
+[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=703611866]
 layout_mode = 2
 
-[node name="Players" type="Label" parent="HBoxContainer"]
+[node name="Players" type="Label" parent="HBoxContainer" unique_id=724735708]
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 0
@@ -27,15 +27,15 @@ Santos Claudio
 Fernandes Cleberson
 Carlos Celinos"
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer" unique_id=650846039]
 layout_mode = 2
 size_flags_horizontal = 10
 
-[node name="Label" type="Label" parent="HBoxContainer/VBoxContainer"]
+[node name="Label" type="Label" parent="HBoxContainer/VBoxContainer" unique_id=838379058]
 layout_mode = 2
 text = "4/4 jogadores"
 
-[node name="Join" type="Button" parent="HBoxContainer/VBoxContainer"]
+[node name="Join" type="Button" parent="HBoxContainer/VBoxContainer" unique_id=249777532]
 layout_mode = 2
 size_flags_vertical = 6
 text = "Entrar"

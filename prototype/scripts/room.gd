@@ -6,11 +6,14 @@ var id: int = -1
 func _init() -> void:
 	ClientPacketHandler.join_room.connect(join_room)
 
+#Send a join request packet to the server
 func _on_join_button_down() -> void:
 	#print(("Room"),id, ClientPacketHandler.client_id)
 	JoinRequestClass.create(id, ClientPacketHandler.client_id).send(ProtNetworkHandler.server_peer)
+	print(ProtNetworkHandler.server_peer, "server peer")
 	#print("(Room) ID: ", id)
 
+#Room receive its respective id
 func setup_room(room_id: int) -> void:
 	id = room_id
 
