@@ -26,8 +26,8 @@ func packet_handler(data: PackedByteArray) -> void:
 		PacketTypeClass.PACKET_TYPE.JOIN_ROOM:
 			var join_packet: JoinRoomClass = JoinRoomClass.create_from_data(data)
 			current_room_id = join_packet.room_id
-			join_room.emit(join_packet.room_id)
 			GamePacketHandler.start_player(join_packet.host_ip, join_packet.room_port)
+			join_room.emit(join_packet.room_id)
 			manage_spawns(client_id, join_packet.remote_ids)
 			#print("(Client handler) request granted for room: ", join_packet.room_id)
 		PacketTypeClass.PACKET_TYPE.QUIT_ROOM:
@@ -53,7 +53,7 @@ func start_room(data: PackedByteArray) -> void:
 	room_port = get_random_port()
 	
 	RoomInfoClass.create(ClientPacketHandler.client_id ,current_room_id, room_port, my_ip).send(ProtNetworkHandler.server_peer)
-	GamePacketHandler.start_host(my_ip, room_port)
+	GamePacketHandler.start_host(my_ip, room_port) 
 	spawn_player(client_id)
 	print("(Client handler) room id: ", room_packet.room)
 

@@ -15,6 +15,7 @@ var avaliable_player_ids: Array = range(3, -1, -1)
 
 # Client variables
 var host_peer: ENetPacketPeer
+var is_connected_to_host: bool = false
 
 func _process(_delta: float) -> void:
 	if host_connection == null: return
@@ -32,7 +33,7 @@ func handle_events() -> void:
 				if is_host:
 					player_connected(peer_sender)
 				else:
-					player_connection()
+					player_connection(peer_sender)
 			ENetConnection.EVENT_DISCONNECT:
 				if is_host:
 					peer_disconnected(peer_sender)
@@ -57,6 +58,7 @@ func start_host(ip_address: String = "127.0.0.1", port: int = 42069) -> void:
 	else:
 		print("Host started!")
 		is_host = true
+		is_connected_to_host = false
 
 func player_connected(_peer: ENetPacketPeer) -> void:
 	print("(Game network) new player connected")
@@ -69,18 +71,28 @@ func peer_disconnected(peer: ENetPacketPeer) -> void:
 	print("Peer: ", player_id, " succesfully disconnected")
 
 func start_player(ip_address: String, port: int) -> void:
-	host_connection = ENetConnection.new()
-	var error: Error = host_connection.create_host(1)
+	var client_connection = ENetConnection.new()
+	var error: Error = client_connection.create_host(1)
 	if error:
 		print("Host creation erro: ", error)
 		return
-	host_peer = host_connection.connect_to_host(ip_address, port)
+	host_connection = client_connection
+	is_host = false
+	is_connected_to_host = false
+	host_peer = client_connection.connect_to_host(ip_address, port)
 	print("Host peer and my id: ", host_peer, ClientPacketHandler.client_id)
 
-func player_connection() -> void:
-	#print("Peer connected (peer side)")
+func player_connection(peer: ENetPacketPeer) -> void:
+	host_peer = peer
+	is_connected_to_host = true
+	print("(Game network) connected to host")
 	return
 
 func host_disconnection() -> void:
 	print("Host disconnected")
+	is_connected_to_host = false
+	host_peer = null
 	host_connection = null
+
+func can_send_to_host() -> bool:
+	return !is_host and is_connected_to_host and host_peer != null
