@@ -1,6 +1,6 @@
 ﻿# Cyber Resistance: Multiplayer Prototype Architecture
 
-This document details the network architecture and custom protocol developed for the Cyber Resistance multiplayer prototype. The system was designed with a focus on clear separation between the user interface (UI), local state management, and client-server communication logic.
+This document details the network architecture and custom protocol developed for the Cyber Resistance multiplayer prototype. 
 
 ---
 
@@ -8,34 +8,34 @@ This document details the network architecture and custom protocol developed for
 
 <img width="778" height="660" alt="image" src="https://github.com/user-attachments/assets/22c9cb17-4375-4836-8c60-a789fc7db1f1" />
 
-The game's network flow is managed by a centralized architecture, where the UI never communicates directly with network sockets. Instead, we use the Facade/Broker pattern through the central `network_handler` component.
+The game's network flow is managed mainly by a client-server architecture using a broker pattern through the central `network_handler` component.
 
 The architecture is divided into three main pillars:
 1. **Connection Management:** `network_handler`
-2. **Server Logic (Host):** `server_network`
+2. **Server Logic:** `server_network`
 3. **Client Logic:** `client_network`
 
 ---
 
 ## 2. Main Components
 
-### ⚙️ `network_handler` (The Orchestrator)
-Acts as the single point of entry and exit for network events.
+### ⚙️ `network_handler` 
+Acts as the single point of entry and exit for network packets.
 
-* **Responsibility:** Routes requests coming up from the UI (`multiplayer`, `pause_control`, `room`) and decides, based on the `is_server` flag, whether to invoke methods from `server_network` or `client_network`.
+* **Responsibility:** Routes requests coming up from the game components (`multiplayer`, `pause_control`, `room`) and decides, based on the `is_server` flag, whether to invoke signals to `server_network` or `client_network`.
 * **Key Attributes:** Manages peer connections (`available_peer_ids`, `peers_connected`) and the server connection (`server_connection`, `server_peer`).
 
-### 🖥️ `server_network` (Host Authority)
+### 🖥️ `server_network` 
 Responsible for managing the global state of matches and the lobby.
 
-* **Responsibility:** Creation, maintenance, and destruction of rooms.
+* **Responsibility:** Creation, maintenance, and destruction of rooms, also player join and quiting of the rooms.
 * **Key Attributes:** Manages room instances (`rooms`), active room IDs (`created_rooms_id`), and room capacity/quantity (`num_room`).
 
-### 💻 `client_network` (Local State)
+### 💻 `client_network` 
 Responsible for maintaining the player's local session state and distributing information processed by the server to the interface.
 
-* **Responsibility:** Translates packets arriving from the server into *Signals* (blue arrows in the diagram) that update the UI reactively.
-* **Key Attributes:** Local IP (`my_ip`), unique client ID (`client_id`), port, and the current room the player is in (`current_room`).
+* **Responsibility:** Translates packets arriving from the server into *Signals* that update the UI reactively and clients state.
+* **Key Attributes:** Local IP address (`my_ip`), unique client ID (`client_id`), port to access the room host server (`room_port`), and the current room the player is in (`current_room`).
 
 ---
 
@@ -43,23 +43,22 @@ Responsible for maintaining the player's local session state and distributing in
 
 Communication in Cyber Resistance follows a unidirectional lifecycle (represented by the arrows in the diagram):
 
-1. **User Action:** Interface modules (e.g., `multiplayer`, `room`) trigger requests (black arrows) to the `network_handler`.
-2. **Routing:** The `network_handler` packages the request and sends it over the network.
-3. **Processing:** The server processes the action and updates the `server_network`.
-4. **Response:** The server sends data back to the client. The local `network_handler` receives the packets and passes them to the `client_network` (red arrows).
-5. **Reactivity:** The `client_network` emits *Signals* (blue arrows) to visual nodes (UI), which update themselves with the new room/match information.
+1. **User Action:** Interface modules (e.g., `multiplayer`, `room`) send packets (black arrows) to the `network_handler`.
+2. **Routing:** The `network_handler` identifies its packets and send it emiting a signal (red arrows) to `server_network`.
+3. **Processing:** The `server_network` processes the action and send a packet back to the `network_handler`.
+4. **Response:** The `network_handler` sends the data to the client by signal emiting.
+5. **Reactivity:** The `client_network` emits *Signals* (blue arrows) to the other nodes, which update themselves with the new information.
 
 ---
 
 ## 4. Custom Protocol (Packet Specification)
 
-To optimize traffic and ensure structured communication, we implemented a custom protocol based on predefined packet "envelopes", divided into **Requests (Client-side)** and **State Commands (Server-side)**.
-
 ### 📤 Client Requests (Client -> Server)
-These are action requests generated by visual nodes (`multiplayer`, `room`, `pause_control`):
+These are action requests generated by comum game nodes (`multiplayer`, `room`, `pause_control`):
 
 * `ROOM_REQUEST`: Requests the creation of a new room.
-* `ROOM_INFO` / `REFRESH_REQUEST`: Requests the updated list of available rooms in the lobby.
+* `ROOM_INFO`: Send all the room information to the host once its created.
+* `REFRESH_REQUEST`: Requests the updated list of available rooms in the lobby.
 * `JOIN_REQUEST`: Requests entry into a specific room.
 * `QUIT_REQUEST`: Notifies the server that the client is leaving the room or the server.
 
@@ -68,6 +67,6 @@ These are authority packets fired by the Host to update the clients' state:
 
 * `PEER_ID`: Connection confirmation, assigning the unique ID to the client machine.
 * `REFRESH`: Sends the updated lobby state (list of active rooms).
-* `START_ROOM`: Command to initiate scene transition and start the match in the room.
+* `START_ROOM`: Command to initiate scene transition and start the room.
 * `JOIN_ROOM_INFO`: Returns data about the room the player just entered (connected players, settings).
 * `QUIT_ROOM`: Forces or confirms the removal of a player from the room.
