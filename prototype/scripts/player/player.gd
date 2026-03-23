@@ -18,9 +18,9 @@ var is_authority: bool:
 
 func _ready() -> void:
 	if is_host:
-		GamePacketHandler.from_player_packet.connect(host_packet_handler)
+		GamePacketHandler.from_player_packet.connect(player_packet_handler)
 	else:
-		GamePacketHandler.from_host_packet.connect(player_packet_handler)
+		GamePacketHandler.from_host_packet.connect(host_packet_handler)
 
 func _physics_process(_delta: float) -> void:
 	if !is_authority: return
@@ -55,14 +55,23 @@ func animate() -> void:
 		Vector2.ZERO:
 			animation.play("idle")
 
-func host_packet_handler(peer: ENetPacketPeer, data: PackedByteArray) -> void:
-	if !is_authority: return
-	var packet: PlayerDataPacket = PlayerDataPacket.create_from_data(data)
-	print("testing (player)")
-
-func player_packet_handler(data: PackedByteArray) -> void:
-	if is_authority: return
+func player_packet_handler(_peer: ENetPacketPeer, data: PackedByteArray) -> void:
+	print(owner_id, "player packet")
 	var packet: PlayerDataPacket = PlayerDataPacket.create_from_data(data)
 	
+	if packet.id != owner_id:
+		return
+	
+	global_position = packet.position
+	animation.play(packet.animation_name)
+	PlayerDataPacket.create(owner_id, packet.position, animation.animation).broadcast(GamePacketHandler.host_connection)
+	print("testing (player)")
+
+func host_packet_handler(data: PackedByteArray) -> void:
+	if is_authority: return
+	print(owner_id, "host packet")
+	var packet: PlayerDataPacket = PlayerDataPacket.create_from_data(data)
+	if packet.id != owner_id:
+		return
 	global_position = packet.position
 	animation.play(packet.animation_name)
