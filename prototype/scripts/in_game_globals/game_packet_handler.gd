@@ -72,7 +72,7 @@ func peer_disconnected(peer: ENetPacketPeer) -> void:
 	var player_id: int = peer.get_meta("id")
 	avaliable_player_ids.push_back(player_id)
 	
-	print("Peer: ", player_id, " succesfully disconnected")
+	print("Peer: ", player_id, " successfully disconnected")
 
 func start_player(ip_address: String, port: int) -> void:
 	var client_connection = ENetConnection.new()

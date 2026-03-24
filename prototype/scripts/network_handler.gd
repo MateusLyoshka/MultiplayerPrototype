@@ -23,7 +23,7 @@ func _ready() -> void:
 	var args = OS.get_cmdline_args()
 	
 	if "--server" in args:
-		print("Initianlizing dedicated server")
+		print("Initializing dedicated server")
 		start_server()
 
 func _process(_delta: float) -> void:
@@ -78,12 +78,12 @@ func peer_connected(peer: ENetPacketPeer) -> void:
 	var peer_id: int = avaliable_peer_ids.pop_back()
 	peer.set_meta("id", peer_id)
 	PeerId.create(peer_id).send(peer)
-	print("(Server network) Peer: ", peer_id, " succesfully connected")
+	print("(Server network) Peer: ", peer_id, " successfully connected")
 
 func peer_disconnected(peer: ENetPacketPeer) -> void:
 	var peer_id: int = peer.get_meta("id")
 	avaliable_peer_ids.push_back(peer_id)
-	print("Peer: ", peer_id, " succesfully disconnected")
+	print("Peer: ", peer_id, " successfully disconnected")
 
 func start_client(ip_address: String, port: int) -> void:
 	server_connection = ENetConnection.new()

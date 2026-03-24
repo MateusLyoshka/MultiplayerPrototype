@@ -60,7 +60,7 @@ func room_request(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 func quit_room_request(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 	var quit_request: QuitRequestClass = QuitRequestClass.create_from_data(data)
 	var room_req_id = quit_request.room_id
-	print("(Server handle) quiting room: ", quit_request.room_id)
+	print("(Server handle) quitting room: ", quit_request.room_id)
 	if peer == rooms[room_req_id].host_peer:
 		rooms.erase(room_req_id)
 		created_rooms_id.erase(room_req_id)
