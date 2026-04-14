@@ -9,9 +9,9 @@ signal spawn_player_signal(player_id: int)
 var my_ip: String
 var room_port: int
 
-var client_id: int = -1
+var my_id: int = -1
 var current_room_id: int
-var remote_ids_ghost: Array[int]
+var spawned_ids: Array[int]
 func _ready() -> void:
 	ProtNetworkHandler.from_server_packet.connect(packet_handler)
 
@@ -20,16 +20,11 @@ func packet_handler(data: PackedByteArray) -> void:
 	match packet_type:
 		PacketTypeClass.PACKET_TYPE.PEER_ID:
 			var peer_id: PeerId = PeerId.create_from_data(data)
-			client_id = peer_id.id
+			my_id = peer_id.id
 		PacketTypeClass.PACKET_TYPE.START_ROOM:
 			start_room(data)
 		PacketTypeClass.PACKET_TYPE.JOIN_ROOM:
-			var join_packet: JoinRoomClass = JoinRoomClass.create_from_data(data)
-			current_room_id = join_packet.room_id
-			GamePacketHandler.start_player(join_packet.host_ip, join_packet.room_port)
-			join_room.emit(join_packet.room_id)
-			manage_spawns(client_id, join_packet.remote_ids)
-			#print("(Client handler) request granted for room: ", join_packet.room_id)
+			join_manager(data)
 		PacketTypeClass.PACKET_TYPE.QUIT_ROOM:
 			current_room_id = -1
 			quit_room.emit()
@@ -38,11 +33,17 @@ func packet_handler(data: PackedByteArray) -> void:
 			var rooms_id: Array[int] = refresh.rooms_id
 			rooms_id.pop_front()
 			room_refresh.emit(rooms_id)
+		PacketTypeClass.PACKET_TYPE.HAS_JOINED:
+			var has_joined: HasJoinedPkt = HasJoinedPkt.create_from_data(data)
+			manage_spawns(has_joined.remote_ids)
 
-func manage_spawns(my_id: int, others_id: Array[int]) -> void:
-	spawn_player(my_id)
-	for i in others_id:
-		spawn_player(i)
+func join_manager(data: PackedByteArray) -> void:
+	var join_packet: JoinRoomClass = JoinRoomClass.create_from_data(data)
+	current_room_id = join_packet.room_id
+	GamePacketHandler.start_player(join_packet.host_ip, join_packet.room_port)
+	join_room.emit(join_packet.room_id)
+	manage_spawns(join_packet.remote_ids)
+	#print("id and remote ids: ", my_id, join_packet.remote_ids)
 
 func start_room(data: PackedByteArray) -> void:
 	var room_packet: StartRoomClass = StartRoomClass.create_from_data(data)
@@ -52,9 +53,9 @@ func start_room(data: PackedByteArray) -> void:
 	my_ip = get_ipv4()
 	room_port = get_random_port()
 	
-	RoomInfoClass.create(ClientPacketHandler.client_id ,current_room_id, room_port, my_ip).send(ProtNetworkHandler.server_peer)
+	RoomInfoClass.create(ClientPacketHandler.my_id ,current_room_id, room_port, my_ip).send(ProtNetworkHandler.server_peer)
 	GamePacketHandler.start_host(my_ip, room_port) 
-	spawn_player(client_id)
+	spawn_player(my_id)
 	print("(Client handler) room id: ", room_packet.room)
 
 func get_random_port() -> int:
@@ -73,5 +74,12 @@ func get_ipv4() -> String:
 				return ip  
 	return "127.0.0.1"
 
+func manage_spawns(others_id: Array[int]) -> void:
+	for i in others_id:
+		if i not in spawned_ids:
+			#print(i,"my id: ", my_id)
+			spawn_player(i)
+
 func spawn_player(spawn_id: int) -> void:
 	spawn_player_signal.emit(spawn_id)
+	spawned_ids.append(spawn_id)

@@ -1,5 +1,8 @@
 extends Node
 
+# Host player signals
+signal game_scripts_setup(is_host: bool)
+
 # Server signals
 signal from_host_packet(data: PackedByteArray)
 
@@ -33,11 +36,11 @@ func handle_events() -> void:
 				if is_host:
 					player_connected(peer_sender)
 					#Debug timeout
-					peer_sender.set_timeout(0, 0, 3600000)
+					peer_sender.set_timeout(0, 3600000, 3600000)
 				else:
 					player_connection(peer_sender)
 					#Debug timeout
-					peer_sender.set_timeout(0, 0, 3600000)
+					peer_sender.set_timeout(0, 3600000, 3600000)
 			ENetConnection.EVENT_DISCONNECT:
 				if is_host:
 					peer_disconnected(peer_sender)
@@ -46,8 +49,10 @@ func handle_events() -> void:
 					return
 			ENetConnection.EVENT_RECEIVE:
 				if is_host:
+					#print("Player packet",peer_sender.get_packet())
 					from_player_packet.emit(peer_sender, peer_sender.get_packet())
 				else:
+					#print("Host packet",peer_sender.get_packet())
 					from_host_packet.emit(peer_sender.get_packet())
 					
 		packet_event = host_connection.service()
@@ -57,12 +62,13 @@ func start_host(ip_address: String = "127.0.0.1", port: int = 42069) -> void:
 	host_connection = ENetConnection.new()
 	var error: Error = host_connection.create_host_bound(ip_address, port)
 	if error:
-		print("Host bound creation error: ", error)
+		print("(Game network) Host bound creation error: ", error)
 		return
 	else:
-		print("Host started!")
+		print("(Game network) Host started!")
 		is_host = true
 		is_connected_to_host = false
+		PlayerHostPacketHandler.setup_packet_handler()
 
 func player_connected(_peer: ENetPacketPeer) -> void:
 	print("(Game network) new player connected")
@@ -72,19 +78,20 @@ func peer_disconnected(peer: ENetPacketPeer) -> void:
 	var player_id: int = peer.get_meta("id")
 	avaliable_player_ids.push_back(player_id)
 	
-	print("Peer: ", player_id, " successfully disconnected")
+	print("(Game network) Peer: ", player_id, " successfully disconnected")
 
 func start_player(ip_address: String, port: int) -> void:
 	var client_connection = ENetConnection.new()
 	var error: Error = client_connection.create_host(1)
 	if error:
-		print("Host creation erro: ", error)
+		print("(Game network) Host creation erro: ", error)
 		return
 	host_connection = client_connection
 	is_host = false
 	is_connected_to_host = false
 	host_peer = client_connection.connect_to_host(ip_address, port)
-	print("Host peer and my id: ", host_peer, ClientPacketHandler.client_id)
+	PlayerHostPacketHandler.setup_packet_handler()
+	game_scripts_setup.emit(is_host)
 
 func player_connection(peer: ENetPacketPeer) -> void:
 	host_peer = peer
@@ -93,7 +100,7 @@ func player_connection(peer: ENetPacketPeer) -> void:
 	return
 
 func host_disconnection() -> void:
-	print("Host disconnected")
+	print("(Game network) Host disconnected")
 	is_connected_to_host = false
 	host_peer = null
 	host_connection = null

@@ -42,11 +42,11 @@ func handle_events() -> void:
 				if is_server:
 					peer_connected(peer_sender)
 					#Debug timeout
-					peer_sender.set_timeout(0, 0, 3600000)
+					peer_sender.set_timeout(0, 3600000, 3600000)
 				else:
 					client_connection()
 					#Debug timeout
-					peer_sender.set_timeout(0, 0, 3600000)
+					peer_sender.set_timeout(0, 3600000, 3600000)
 			ENetConnection.EVENT_DISCONNECT:
 				if is_server:
 					peer_disconnected(peer_sender)
@@ -92,7 +92,7 @@ func start_client(ip_address: String, port: int) -> void:
 		print("Host creation erro: ", error)
 		return
 	server_peer = server_connection.connect_to_host(ip_address, port)
-	server_peer.set_timeout(0, 3000, 5000)
+	#server_peer.set_timeout(0, 3000, 5000)
 
 func client_connection() -> void:
 	on_peer_connected.emit()
