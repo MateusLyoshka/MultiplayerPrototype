@@ -13,7 +13,7 @@ func _on_back_to_menu_button_down() -> void:
 
 	#send a room creation packet to server_packet_handler when the new room button is pressed
 func _on_new_room_button_down() -> void:
-	RoomRequestClass.create(ClientPacketHandler.client_id).send(ProtNetworkHandler.server_peer)
+	RoomRequestClass.create(ClientPacketHandler.my_id).send(ProtNetworkHandler.server_peer)
 	return
 
 	#send a refresh packet which returns a list of rooms in the refresh request packet

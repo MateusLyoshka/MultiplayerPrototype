@@ -9,7 +9,7 @@ func _init() -> void:
 #Send a join request packet to the server
 func _on_join_button_down() -> void:
 	#print(("Room"),id, ClientPacketHandler.client_id)
-	JoinRequestClass.create(id, ClientPacketHandler.client_id).send(ProtNetworkHandler.server_peer)
+	JoinRequestClass.create(id, ClientPacketHandler.my_id).send(ProtNetworkHandler.server_peer)
 	#print("(Room) ID: ", id)
 
 #Room receive its respective id

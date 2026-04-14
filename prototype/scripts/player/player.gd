@@ -12,15 +12,20 @@ var last_sent_position: Vector2
 #var last_sent_animation: String
 
 var owner_id: int
-var is_host: bool = GamePacketHandler.is_host
+var is_host: bool
 var is_authority: bool:
-	get: return owner_id == ClientPacketHandler.client_id
+	get: return owner_id == ClientPacketHandler.my_id
 
 func _ready() -> void:
+	is_host = GamePacketHandler.is_host
+	#print("(Player) is host? id?", is_host, ClientPacketHandler.my_id)
+	setup_player()
+
+func setup_player() -> void:
 	if is_host:
-		GamePacketHandler.from_player_packet.connect(player_packet_handler)
+		PlayerHostPacketHandler.player_movement_signal.connect(player_packet_handler)
 	else:
-		GamePacketHandler.from_host_packet.connect(host_packet_handler)
+		PlayerHostPacketHandler.host_movement_signal.connect(host_packet_handler)
 
 func _physics_process(_delta: float) -> void:
 	if !is_authority: return
@@ -33,11 +38,15 @@ func _physics_process(_delta: float) -> void:
 	time_since_last_packet += _delta
 	if time_since_last_packet >= network_tick_rate:
 		time_since_last_packet = 0
-		if is_host:
+		#print(is_host)
+		#print("(Player) is host? spawned ids size? ", is_host, ClientPacketHandler.spawned_ids.size() )
+		if is_host && ClientPacketHandler.spawned_ids.size() > 1:
 			PlayerDataPacket.create(owner_id, global_position, animation.animation).broadcast(GamePacketHandler.host_connection)
 			#print("host: ", GamePacketHandler.host_peer)
+			#print("(Player) Pacote enviado pelo host")
 		elif GamePacketHandler.can_send_to_host():
 			#print("player: ", GamePacketHandler.host_peer)
+			#print("(Player) Pacote enviado pelo player")
 			PlayerDataPacket.create(owner_id, global_position, animation.animation).send(GamePacketHandler.host_peer)
 
 func animate() -> void:
@@ -55,21 +64,18 @@ func animate() -> void:
 		Vector2.ZERO:
 			animation.play("idle")
 
-func player_packet_handler(_peer: ENetPacketPeer, data: PackedByteArray) -> void:
-	print(owner_id, "player packet")
+func player_packet_handler(data: PackedByteArray) -> void:
 	var packet: PlayerDataPacket = PlayerDataPacket.create_from_data(data)
 	
 	if packet.id != owner_id:
 		return
-	
+	#print("Player pos: ", packet.position)
 	global_position = packet.position
 	animation.play(packet.animation_name)
 	PlayerDataPacket.create(owner_id, packet.position, animation.animation).broadcast(GamePacketHandler.host_connection)
-	print("testing (player)")
 
 func host_packet_handler(data: PackedByteArray) -> void:
 	if is_authority: return
-	print(owner_id, "host packet")
 	var packet: PlayerDataPacket = PlayerDataPacket.create_from_data(data)
 	if packet.id != owner_id:
 		return

@@ -1,9 +1,10 @@
-[gd_scene load_steps=3 format=3 uid="uid://bvwfdv6cltko1"]
+[gd_scene format=3 uid="uid://bvwfdv6cltko1"]
 
 [ext_resource type="PackedScene" uid="uid://dnnk20ejw87e6" path="res://prototype/scenes/pause_control.tscn" id="1_kox51"]
+[ext_resource type="PackedScene" uid="uid://nos1s3ei7bbe" path="res://prototype/scenes/chat.tscn" id="1_v8mux"]
 [ext_resource type="Script" uid="uid://dkadrsnrlb7oi" path="res://prototype/scripts/player/spawn_player.gd" id="2_5fvyf"]
 
-[node name="Control" type="Control"]
+[node name="Control" type="Control" unique_id=785532577]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,11 +12,13 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="PauseControl" parent="." instance=ExtResource("1_kox51")]
+[node name="Chat" parent="." unique_id=1864914425 instance=ExtResource("1_v8mux")]
+
+[node name="PauseControl" parent="." unique_id=1482379346 instance=ExtResource("1_kox51")]
 visible = false
 layout_mode = 1
 
-[node name="Players" type="Label" parent="."]
+[node name="Players" type="Label" parent="." unique_id=717776141]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -26,7 +29,7 @@ offset_bottom = 23.0
 grow_horizontal = 2
 text = "Players 1/4"
 
-[node name="Aguarde" type="Label" parent="."]
+[node name="Aguarde" type="Label" parent="." unique_id=348918504]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -39,5 +42,5 @@ grow_horizontal = 0
 grow_vertical = 0
 text = "Aguarde"
 
-[node name="PlayerSpawner" type="Node" parent="."]
+[node name="PlayerSpawner" type="Node" parent="." unique_id=1437538434]
 script = ExtResource("2_5fvyf")

@@ -43,9 +43,12 @@ func join_request(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 	if(rooms[room].current_players.size() > 4): 
 		print("The room is full!")
 		return
-	JoinRoomClass.create(room, rooms[room].port, rooms[room].host_ip, rooms[room].current_players_id).send(peer)
 	rooms[room].add_player(peer)
 	rooms[room].add_player_id(request.player_id)
+	JoinRoomClass.create(room, rooms[room].port, rooms[room].host_ip, rooms[room].current_players_id).send(peer)
+	for i in range(rooms[room].current_players_id.size()):
+		if rooms[room].current_players[i] != peer:
+			HasJoinedPkt.create(rooms[room].current_players_id).send(rooms[room].current_players[i])
 	print("(Server handler) All players in the room: ", rooms[room].current_players_id)
 
 func room_request(peer: ENetPacketPeer, data: PackedByteArray) -> void:
