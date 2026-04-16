@@ -22,24 +22,26 @@ func _on_send_pressed() -> void:
 	if !raw_text.is_empty():
 		if is_host:
 			#print("(Chat) host sending: ",raw_text)
-			append_message(raw_text) 
-			ChatTextClass.create(raw_text).broadcast(GamePacketHandler.host_connection)
+			var packet: ChatTextClass = ChatTextClass.create(ClientPacketHandler.temporary_player_name, raw_text)
+			append_message(packet.sender_name, packet.text)
+			packet.broadcast(GamePacketHandler.host_connection)
 		else:
 			#print("(Chat) player sending: ",raw_text)
-			ChatTextClass.create(raw_text).send(GamePacketHandler.host_peer)
+			ChatTextClass.create(ClientPacketHandler.temporary_player_name, raw_text).send(GamePacketHandler.host_peer)
 		input_line.clear()
 
 func player_text(data: PackedByteArray) -> void:
-	var text_packet: ChatTextClass = ChatTextClass.create_from_data(data) 
+	var text_packet: ChatTextClass = ChatTextClass.create_from_data(data)
 	#print("(Chat) player received: ",text_packet.text)
-	append_message(text_packet.text) 
+	append_message(text_packet.sender_name, text_packet.text)
 
 func host_text(data: PackedByteArray) -> void:
-	var text_packet: ChatTextClass = ChatTextClass.create_from_data(data) 
+	var text_packet: ChatTextClass = ChatTextClass.create_from_data(data)
 	#print("(Chat) player received: ",text_packet.text)
-	append_message(text_packet.text) 
-	ChatTextClass.create(text_packet.text).broadcast(GamePacketHandler.host_connection)
+	append_message(text_packet.sender_name, text_packet.text)
+	text_packet.broadcast(GamePacketHandler.host_connection)
 
-func append_message(msg: String) -> void:
-	display.text += msg + "\n"
+func append_message(sender_name: String, msg: String) -> void:
+	var display_name: String = "me" if sender_name == ClientPacketHandler.temporary_player_name else sender_name
+	display.text += "%s: %s\n" % [display_name, msg]
 	display.scroll_to_line(display.get_line_count())

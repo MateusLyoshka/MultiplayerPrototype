@@ -10,6 +10,7 @@ var my_ip: String
 var room_port: int
 
 var my_id: int = -1
+var temporary_player_name: String = "player"
 var current_room_id: int
 var spawned_ids: Array[int]
 func _ready() -> void:
@@ -21,6 +22,7 @@ func packet_handler(data: PackedByteArray) -> void:
 		PacketTypeClass.PACKET_TYPE.PEER_ID:
 			var peer_id: PeerId = PeerId.create_from_data(data)
 			my_id = peer_id.id
+			temporary_player_name = "player_%d" % my_id
 		PacketTypeClass.PACKET_TYPE.START_ROOM:
 			start_room(data)
 		PacketTypeClass.PACKET_TYPE.JOIN_ROOM:
@@ -53,25 +55,25 @@ func start_room(data: PackedByteArray) -> void:
 	my_ip = get_ipv4()
 	room_port = get_random_port()
 	
-	RoomInfoClass.create(ClientPacketHandler.my_id ,current_room_id, room_port, my_ip).send(ProtNetworkHandler.server_peer)
-	GamePacketHandler.start_host(my_ip, room_port) 
+	RoomInfoClass.create(ClientPacketHandler.my_id, current_room_id, room_port, my_ip).send(ProtNetworkHandler.server_peer)
+	GamePacketHandler.start_host(my_ip, room_port)
 	spawn_player(my_id)
 	print("(Client handler) room id: ", room_packet.room)
 
 func get_random_port() -> int:
 	var temp_udp = PacketPeerUDP.new()
 	if temp_udp.bind(0) == OK:
-		var port = temp_udp.get_local_port() 
-		temp_udp.close() 
+		var port = temp_udp.get_local_port()
+		temp_udp.close()
 		return port
-	return 0 
+	return 0
 
 func get_ipv4() -> String:
 	var ip_list = IP.get_local_addresses()
 	for ip in ip_list:
 		if ip.count(".") == 3:
 			if ip.begins_with("192.168.") or ip.begins_with("10.") or ip.begins_with("172."):
-				return ip  
+				return ip
 	return "127.0.0.1"
 
 func manage_spawns(others_id: Array[int]) -> void:
