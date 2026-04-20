@@ -70,3 +70,67 @@ These are authority packets fired by the Host to update the clients' state:
 * `START_ROOM`: Command to initiate scene transition and start the room.
 * `JOIN_ROOM_INFO`: Returns data about the room the player just entered (connected players, settings).
 * `QUIT_ROOM`: Forces or confirms the removal of a player from the room.
+
+---
+
+## 5. Architecture Overview (In-Game Player/Host Architecture)
+
+> Insert the Player/Host architecture image here (the one used as base in this discussion).
+
+After a player creates a room (host role) or joins a room (client role), the in-game architecture becomes host-centered. The host acts as the authority endpoint: it receives player-originated packets, processes/validates them, and rebroadcasts state updates to all connected players when needed.
+
+---
+
+## 6. Main Components (In-Game)
+
+### ⚙️ `game_packet_handler`
+Acts as the ENet runtime gateway for in-game traffic.
+
+* **Responsibility:** Maintains host/client connection state, processes ENet events, and routes incoming packets through role-specific signals (`from_player_packet` when host, `from_host_packet` when client).
+* **Key Attributes:** `host_connection`, `host_peer`, `is_host`, `is_connected_to_host`, and available player ID tracking.
+
+### 🔀 `player_host_packet_handler`
+Acts as the in-game packet demultiplexer based on packet type.
+
+* **Responsibility:** Subscribes to the correct `game_packet_handler` signal according to role and emits high-level signals consumed by gameplay/UI scripts.
+* **Key Signals:**
+	* Host-side receives from players: `player_movement_signal`, `player_text_signal`
+	* Client-side receives from host: `host_movement_signal`, `host_text_signal`
+
+---
+
+## 7. Communication Flow (In-Game Signaling)
+
+1. **Player Action:** A client player sends movement/text packets to the host.
+2. **Host Routing:** `game_packet_handler` receives the packet event and emits `from_player_packet`.
+3. **Type Dispatch:** `player_host_packet_handler` parses the packet type and emits a semantic signal.
+4. **Game Update:** Host scripts process the packet and rebroadcast when synchronization is required.
+5. **Client Reaction:** Clients receive host packets via `from_host_packet` and update local state/UI.
+
+---
+
+## 8. In-Game Custom Protocol (Packet Specification)
+
+### 📤 Player-Originated Packets (Player -> Host)
+
+* `PLAYER_PACKET`: Sends player movement and animation updates to the host.
+* `TEXT_PACKET`: Sends chat messages to the host.
+
+### 📥 Host Broadcast Packets (Host -> Players)
+
+These packets are broadcast by the host to keep all clients synchronized:
+
+* `PLAYER_PACKET`: Broadcasts movement and animation updates to all players.
+* `TEXT_PACKET`: Broadcasts chat messages to all players.
+
+---
+
+## 9. Presence Notification Packets
+
+### 🔔 `HAS_JOINED` (Host -> Clients)
+
+* `HAS_JOINED`: Notifies clients that one or more players joined the session.
+
+### 🚪 `HAS_QUITTED` (Host -> Clients)
+
+* `HAS_QUITTED`: Notifies clients that one or more players left the session.
