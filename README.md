@@ -6,7 +6,8 @@ This document details the network architecture and custom protocol developed for
 
 ## 1. Architecture Overview (Menu Architecture)
 
-<img width="778" height="660" alt="image" src="https://github.com/user-attachments/assets/22c9cb17-4375-4836-8c60-a789fc7db1f1" />
+<img width="989" height="781" alt="Screenshot 2026-04-19 223907" src="https://github.com/user-attachments/assets/46415260-3834-4de9-82d5-0e3d0788f3da" />
+
 
 The game's network flow is managed mainly by a client-server architecture using a broker pattern through the central `network_handler` component.
 
@@ -75,7 +76,7 @@ These are authority packets fired by the Host to update the clients' state:
 
 ## 5. Architecture Overview (In-Game Player/Host Architecture)
 
-> Insert the Player/Host architecture image here (the one used as base in this discussion).
+<img width="605" height="508" alt="Screenshot 2026-04-19 223853" src="https://github.com/user-attachments/assets/8f65a573-4545-41f1-ac62-d531cf7a0fa1" />
 
 After a player creates a room (host role) or joins a room (client role), the in-game architecture becomes host-centered. The host acts as the authority endpoint: it receives player-originated packets, processes/validates them, and rebroadcasts state updates to all connected players when needed.
 
