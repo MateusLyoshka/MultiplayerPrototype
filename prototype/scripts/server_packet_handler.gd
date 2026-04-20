@@ -37,10 +37,10 @@ func send_refresh(peer: ENetPacketPeer) -> void:
 func join_request(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 	var request: JoinRequestClass = JoinRequestClass.create_from_data(data)
 	var room: int = request.room
-	if(!created_rooms_id.has(room)):
+	if (!created_rooms_id.has(room)):
 		print("This room does not exist anymore, please refresh the page!")
 		return
-	if(rooms[room].current_players.size() > 4): 
+	if (rooms[room].current_players.size() > 4):
 		print("The room is full!")
 		return
 	rooms[room].add_player(peer)
@@ -64,10 +64,24 @@ func quit_room_request(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 	var quit_request: QuitRequestClass = QuitRequestClass.create_from_data(data)
 	var room_req_id = quit_request.room_id
 	print("(Server handle) quitting room: ", quit_request.room_id)
-	if peer == rooms[room_req_id].host_peer:
+	if not rooms.has(room_req_id):
+		return
+
+	var room: RoomStorage = rooms[room_req_id]
+	if peer == room.host_peer:
+		for current_peer in room.current_players.duplicate():
+			QuitRoomClass.create().send(current_peer)
 		rooms.erase(room_req_id)
 		created_rooms_id.erase(room_req_id)
+		num_room.append(room_req_id)
+		num_room.sort()
+		return
+
+	room.remove_player(peer)
+	room.remove_player_id(quit_request.player_id)
 	QuitRoomClass.create().send(peer)
+	for current_peer in room.current_players:
+		HasQuittedPkt.create(room.current_players_id).send(current_peer)
 
 #func is_peer_owner(room_id: int, peer: ENetPacketPeer) -> bool:
 	#if not rooms.has(room_id) or rooms[room_id].is_empty():

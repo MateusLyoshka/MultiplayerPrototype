@@ -37,14 +37,17 @@ func packet_handler(data: PackedByteArray) -> void:
 			room_refresh.emit(rooms_id)
 		PacketTypeClass.PACKET_TYPE.HAS_JOINED:
 			var has_joined: HasJoinedPkt = HasJoinedPkt.create_from_data(data)
-			manage_spawns(has_joined.remote_ids)
+			sync_spawns(has_joined.remote_ids)
+		PacketTypeClass.PACKET_TYPE.HAS_QUITTED:
+			var has_quited: HasQuittedPkt = HasQuittedPkt.create_from_data(data)
+			sync_spawns(has_quited.remote_ids)
 
 func join_manager(data: PackedByteArray) -> void:
 	var join_packet: JoinRoomClass = JoinRoomClass.create_from_data(data)
 	current_room_id = join_packet.room_id
 	GamePacketHandler.start_player(join_packet.host_ip, join_packet.room_port)
 	join_room.emit(join_packet.room_id)
-	manage_spawns(join_packet.remote_ids)
+	sync_spawns(join_packet.remote_ids)
 	#print("id and remote ids: ", my_id, join_packet.remote_ids)
 
 func start_room(data: PackedByteArray) -> void:
@@ -76,11 +79,22 @@ func get_ipv4() -> String:
 				return ip
 	return "127.0.0.1"
 
-func manage_spawns(others_id: Array[int]) -> void:
+func sync_spawns(others_id: Array[int]) -> void:
+	for spawned_id in spawned_ids.duplicate():
+		if spawned_id not in others_id:
+			despawn_player(spawned_id)
+
 	for i in others_id:
 		if i not in spawned_ids:
-			#print(i,"my id: ", my_id)
 			spawn_player(i)
+
+func despawn_player(spawn_id: int) -> void:
+	for player_node in get_tree().get_nodes_in_group("players"):
+		if player_node.owner_id == spawn_id:
+			player_node.queue_free()
+			spawned_ids.erase(spawn_id)
+			return
+	spawned_ids.erase(spawn_id)
 
 func spawn_player(spawn_id: int) -> void:
 	spawn_player_signal.emit(spawn_id)

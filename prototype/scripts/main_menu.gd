@@ -5,6 +5,7 @@ const MULTIJOGADOR = preload("uid://cg3be3tn5ksqa")
 @onready var line_edit: LineEdit = $Panel/MarginContainer/HBoxContainer/VBoxContainer/LineEdit
 @onready var exit: Button = $Panel/MarginContainer/HBoxContainer/VBoxContainer/Exit
 
+
 var original_text: String = ""
 
 func _ready() -> void:
@@ -31,5 +32,4 @@ func on_connection_error() -> void:
 	start.text = original_text
 
 func load_multiplayer_scene() -> void:
-	get_tree().change_scene_to_file("res://prototype/scenes/multiplayer.tscn")
-	
+	get_tree().change_scene_to_file("res://prototype/scenes/legacy/multiplayer.tscn")

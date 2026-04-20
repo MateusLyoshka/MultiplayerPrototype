@@ -19,8 +19,8 @@ func _on_continue_button_down() -> void:
 
 func _on_quit_button_down() -> void:
 	get_tree().paused = false
-	print("(Pasue) Current room: ", ClientPacketHandler.current_room)
-	QuitRequestClass.create(ClientPacketHandler.current_room).send(ProtNetworkHandler.server_peer)
+	print("(Pasue) Current room: ", ClientPacketHandler.current_room_id)
+	QuitRequestClass.create(ClientPacketHandler.current_room_id).send(ProtNetworkHandler.server_peer)
 
 func quit_room() -> void:
 	get_tree().change_scene_to_file("res://prototype/scenes/multiplayer.tscn")
