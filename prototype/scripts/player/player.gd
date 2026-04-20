@@ -1,12 +1,13 @@
 extends CharacterBody2D
 
 @onready var animation: AnimatedSprite2D = $Animation
+@onready var camera: Camera2D = get_node_or_null("Camera2D")
 
 const SPEED: float = 300
 var movement_direction: Vector2
 var current_anim: String
 
-var network_tick_rate: float = 0.02 
+var network_tick_rate: float = 0.02
 var time_since_last_packet: float = 0.0
 var last_sent_position: Vector2
 #var last_sent_animation: String
@@ -19,7 +20,17 @@ var is_authority: bool:
 func _ready() -> void:
 	is_host = GamePacketHandler.is_host
 	#print("(Player) is host? id?", is_host, ClientPacketHandler.my_id)
+	add_to_group("players")
 	setup_player()
+	setup_camera()
+
+func setup_camera() -> void:
+	if camera == null:
+		return
+
+	camera.enabled = is_authority
+	if is_authority:
+		camera.make_current()
 
 func setup_player() -> void:
 	if is_host:

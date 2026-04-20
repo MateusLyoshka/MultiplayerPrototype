@@ -127,6 +127,8 @@ radius = 12.0
 height = 34.0
 
 [node name="Player" type="CharacterBody2D" unique_id=777774464]
+z_index = 9
+scale = Vector2(0.5, 0.5)
 script = ExtResource("1_bof8o")
 
 [node name="Animation" type="AnimatedSprite2D" parent="." unique_id=1488795725]
@@ -138,3 +140,6 @@ animation = &"idle"
 position = Vector2(1, 3)
 scale = Vector2(2, 2)
 shape = SubResource("CapsuleShape2D_bof8o")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=538521869]
+zoom = Vector2(2, 2)

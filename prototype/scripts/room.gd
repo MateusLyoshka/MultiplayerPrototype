@@ -1,6 +1,7 @@
 extends PanelContainer
 class_name RoomItem
 
+@export_file("*.tscn") var room_scene_path: String = "res://prototype/scenes/legacy/chat.tscn"
 var id: int = -1
 
 func _init() -> void:
@@ -21,4 +22,4 @@ func join_room(room_id: int) -> void:
 		auto_join()
 
 func auto_join() -> void:
-	get_tree().change_scene_to_file("res://prototype/scenes/leaving_room.tscn")
+	get_tree().change_scene_to_file(room_scene_path)

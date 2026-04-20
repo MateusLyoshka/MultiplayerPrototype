@@ -14,6 +14,7 @@ border_color = Color(0, 0, 0, 1)
 custom_minimum_size = Vector2(0, 120)
 theme_override_styles/panel = SubResource("StyleBoxFlat_v60l3")
 script = ExtResource("1_82txf")
+room_scene_path = "uid://co71tgl480phx"
 
 [node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=703611866]
 layout_mode = 2
