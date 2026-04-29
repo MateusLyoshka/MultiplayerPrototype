@@ -1,17 +1,19 @@
 [gd_scene format=4 uid="uid://co71tgl480phx"]
 
-[ext_resource type="Script" uid="uid://dlsvmmcniyjla" path="res://prototype/scripts/world_scripts/world.gd" id="1_xgs05"]
-[ext_resource type="PackedScene" uid="uid://dj75hacb2m7bp" path="res://prototype/scenes/legacy/player_spawner.tscn" id="2_pukvy"]
-[ext_resource type="Texture2D" uid="uid://dd564gnliykm1" path="res://prototype/assets/sprites/tileSets/buildings/university/universityExteriorTiles.png" id="2_wskh0"]
-[ext_resource type="Texture2D" uid="uid://pcwwjhip1ng6" path="res://prototype/assets/sprites/tileSets/buildings/cafeteria/cafeteriaExteriorTiles.png" id="6_h8bae"]
-[ext_resource type="Texture2D" uid="uid://baexq1n1fruo7" path="res://prototype/assets/sprites/tileSets/grounds/TreesTiles.png" id="9_vw32m"]
-[ext_resource type="Texture2D" uid="uid://bqw2k72yti3p1" path="res://prototype/assets/sprites/tileSets/grounds/objectsTiles.png" id="10_q58vl"]
-[ext_resource type="Texture2D" uid="uid://cm4shyteatu3m" path="res://prototype/assets/sprites/tileSets/grounds/sidewalkTile.png" id="11_akbd4"]
-[ext_resource type="Texture2D" uid="uid://dmhgxdmbtcvad" path="res://prototype/assets/sprites/tileSets/grounds/asphaltTile.png" id="12_ln2hs"]
-[ext_resource type="Texture2D" uid="uid://bgfnut2bc1jjq" path="res://prototype/assets/sprites/tileSets/grounds/grassTile.png" id="13_r1gjj"]
+[ext_resource type="Script" uid="uid://dlsvmmcniyjla" path="res://prototype/scripts/world_scripts/world.gd" id="1_uocil"]
+[ext_resource type="PackedScene" uid="uid://dj75hacb2m7bp" path="res://prototype/scenes/in_game_reusables/player_spawner.tscn" id="2_wtr3g"]
+[ext_resource type="Texture2D" uid="uid://cm4shyteatu3m" path="res://prototype/assets/sprites/tileSets/grounds/sidewalkTile.png" id="3_7b1jm"]
+[ext_resource type="Texture2D" uid="uid://dmhgxdmbtcvad" path="res://prototype/assets/sprites/tileSets/grounds/asphaltTile.png" id="4_g4ntb"]
+[ext_resource type="Texture2D" uid="uid://bgfnut2bc1jjq" path="res://prototype/assets/sprites/tileSets/grounds/grassTile.png" id="5_x6agv"]
+[ext_resource type="Texture2D" uid="uid://baexq1n1fruo7" path="res://prototype/assets/sprites/tileSets/grounds/TreesTiles.png" id="6_ch2lg"]
+[ext_resource type="Texture2D" uid="uid://bqw2k72yti3p1" path="res://prototype/assets/sprites/tileSets/grounds/objectsTiles.png" id="7_hj5d6"]
+[ext_resource type="Texture2D" uid="uid://pcwwjhip1ng6" path="res://prototype/assets/sprites/tileSets/buildings/cafeteria/cafeteriaExteriorTiles.png" id="8_iuyak"]
+[ext_resource type="PackedScene" uid="uid://ci6u83ijv46vq" path="res://prototype/scenes/in_game_reusables/doorArea.tscn" id="8_wtr3g"]
+[ext_resource type="Texture2D" uid="uid://dd564gnliykm1" path="res://prototype/assets/sprites/tileSets/buildings/university/universityExteriorTiles.png" id="9_m2e54"]
+[ext_resource type="PackedScene" uid="uid://nos1s3ei7bbe" path="res://prototype/scenes/in_game_reusables/chat.tscn" id="10_us8y6"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ya7nt"]
-texture = ExtResource("11_akbd4")
+texture = ExtResource("3_7b1jm")
 texture_region_size = Vector2i(32, 32)
 0:0/0 = 0
 1:0/0 = 0
@@ -43,7 +45,7 @@ texture_region_size = Vector2i(32, 32)
 6:3/0 = 0
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_8hgeh"]
-texture = ExtResource("12_ln2hs")
+texture = ExtResource("4_g4ntb")
 texture_region_size = Vector2i(32, 32)
 0:0/0 = 0
 1:0/0 = 0
@@ -68,7 +70,7 @@ texture_region_size = Vector2i(32, 32)
 6:2/0 = 0
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_33iyb"]
-texture = ExtResource("13_r1gjj")
+texture = ExtResource("5_x6agv")
 texture_region_size = Vector2i(32, 32)
 0:0/0 = 0
 1:0/0 = 0
@@ -107,7 +109,7 @@ sources/1 = SubResource("TileSetAtlasSource_8hgeh")
 sources/2 = SubResource("TileSetAtlasSource_33iyb")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_t88ev"]
-texture = ExtResource("9_vw32m")
+texture = ExtResource("6_ch2lg")
 texture_region_size = Vector2i(32, 32)
 0:0/0 = 0
 0:0/0/z_index = 1
@@ -143,7 +145,7 @@ texture_region_size = Vector2i(32, 32)
 3:1/0/physics_layer_0/polygon_0/points = PackedVector2Array(-4, 14, -4, 15, 5, 15, 5, 14, 1, 11)
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ttxgv"]
-texture = ExtResource("10_q58vl")
+texture = ExtResource("7_hj5d6")
 texture_region_size = Vector2i(32, 32)
 0:0/0 = 0
 0:0/0/z_index = 1
@@ -210,7 +212,7 @@ sources/0 = SubResource("TileSetAtlasSource_t88ev")
 sources/1 = SubResource("TileSetAtlasSource_ttxgv")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_dss4m"]
-texture = ExtResource("6_h8bae")
+texture = ExtResource("8_iuyak")
 texture_region_size = Vector2i(8, 8)
 0:15/0 = 0
 1:15/0 = 0
@@ -368,7 +370,7 @@ tile_size = Vector2i(8, 8)
 sources/0 = SubResource("TileSetAtlasSource_dss4m")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_lakw3"]
-texture = ExtResource("6_h8bae")
+texture = ExtResource("8_iuyak")
 texture_region_size = Vector2i(8, 8)
 8:13/0 = 0
 9:13/0 = 0
@@ -494,7 +496,7 @@ tile_size = Vector2i(8, 8)
 sources/0 = SubResource("TileSetAtlasSource_lakw3")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_qevbg"]
-texture = ExtResource("2_wskh0")
+texture = ExtResource("9_m2e54")
 texture_region_size = Vector2i(8, 8)
 11:13/0 = 0
 12:13/0 = 0
@@ -650,7 +652,7 @@ texture_region_size = Vector2i(8, 8)
 10:12/0 = 0
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ivvmu"]
-texture = ExtResource("6_h8bae")
+texture = ExtResource("8_iuyak")
 texture_region_size = Vector2i(8, 8)
 14:15/0 = 0
 13:15/0 = 0
@@ -865,9 +867,9 @@ size = Vector2(205, 147)
 
 [node name="World" type="Node2D" unique_id=245672481]
 y_sort_enabled = true
-script = ExtResource("1_xgs05")
+script = ExtResource("1_uocil")
 
-[node name="PlayerSpawner" parent="." unique_id=2076262541 instance=ExtResource("2_pukvy")]
+[node name="PlayerSpawner" parent="." unique_id=2076262541 instance=ExtResource("2_wtr3g")]
 position = Vector2(1601, -174)
 
 [node name="Cafeteriapos" type="Marker2D" parent="." unique_id=1104507935]
@@ -920,6 +922,10 @@ tile_map_data = PackedByteArray("AAATAPz/AQABAAMAAAAWAPz/AQABAAMAAAAeAPz/AQABAAM
 tile_set = SubResource("TileSet_i3anq")
 
 [node name="Cafeteria" type="Node2D" parent="." unique_id=1806726211]
+
+[node name="DoorArea" parent="Cafeteria" unique_id=1151928510 instance=ExtResource("8_wtr3g")]
+position = Vector2(1324, 22)
+target_scene = "uid://bsd4bois8atcm"
 
 [node name="Cafeteria1" type="TileMapLayer" parent="Cafeteria" unique_id=653543497]
 z_index = 1
@@ -1032,5 +1038,7 @@ collision_mask = 13
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Colisoes/Universidade" unique_id=531800228]
 position = Vector2(-0.5, -41.5)
 shape = SubResource("RectangleShape2D_lakw3")
+
+[node name="CanvasLayer" parent="." unique_id=509079986 instance=ExtResource("10_us8y6")]
 
 [connection signal="finished" from="BgGame" to="BgGame" method="_on_finished"]

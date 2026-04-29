@@ -1,10 +1,11 @@
-[gd_scene load_steps=22 format=3 uid="uid://jli2dgv2caf6"]
+[gd_scene format=3 uid="uid://jli2dgv2caf6"]
 
-[ext_resource type="Script" uid="uid://fgdo85xswlpn" path="res://scripts/npcMovement.gd" id="1_xyb2a"]
-[ext_resource type="Texture2D" uid="uid://024m7k8paiv0" path="res://assets/sprites/characters/npcs/violetCharacter.png" id="2_5mjcs"]
-[ext_resource type="Texture2D" uid="uid://c0t4jbacy1x6v" path="res://assets/sprites/characters/npcs/raviCharacter.png" id="2_ruv84"]
-[ext_resource type="Script" uid="uid://lnug7icdnm1h" path="res://scripts/raviNpcData.gd" id="5_xyb2a"]
-[ext_resource type="PackedScene" uid="uid://v58rm88kq60w" path="res://scenes/tasks.tscn" id="6_twfps"]
+[ext_resource type="Script" path="res://scripts/npcMovement.gd" id="1_xyb2a"]
+[ext_resource type="Texture2D" path="res://assets/sprites/characters/npcs/violetCharacter.png" id="2_5mjcs"]
+[ext_resource type="Texture2D" uid="uid://c0t4jbacy1x6v" path="res://prototype/assets/sprites/characters/npcs/raviCharacter.png" id="2_ruv84"]
+[ext_resource type="Script" path="res://scripts/raviNpcData.gd" id="5_xyb2a"]
+[ext_resource type="PackedScene" uid="uid://v58rm88kq60w" path="res://prototype/scenes/new/tasks.tscn" id="6_twfps"]
+
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1f4j7"]
 size = Vector2(10, 8)

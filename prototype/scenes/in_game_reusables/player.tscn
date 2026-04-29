@@ -1,58 +1,58 @@
 [gd_scene format=3 uid="uid://qynwjxu3m3a0"]
 
-[ext_resource type="Texture2D" uid="uid://6qc670nte1dg" path="res://prototype/assets/playerCharacter.png" id="1_0mukf"]
-[ext_resource type="Script" uid="uid://c0jcc5hl13ke4" path="res://prototype/scripts/player/player.gd" id="1_bof8o"]
+[ext_resource type="Script" uid="uid://c0jcc5hl13ke4" path="res://prototype/scripts/player/player.gd" id="1_jymq8"]
+[ext_resource type="Texture2D" uid="uid://6qc670nte1dg" path="res://prototype/assets/playerCharacter.png" id="2_wlbto"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_1j7wn"]
-atlas = ExtResource("1_0mukf")
+atlas = ExtResource("2_wlbto")
 region = Rect2(32, 0, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_bof8o"]
-atlas = ExtResource("1_0mukf")
+atlas = ExtResource("2_wlbto")
 region = Rect2(0, 0, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_sgim1"]
-atlas = ExtResource("1_0mukf")
+atlas = ExtResource("2_wlbto")
 region = Rect2(32, 0, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_gjwtk"]
-atlas = ExtResource("1_0mukf")
+atlas = ExtResource("2_wlbto")
 region = Rect2(64, 0, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_0sytc"]
-atlas = ExtResource("1_0mukf")
+atlas = ExtResource("2_wlbto")
 region = Rect2(0, 32, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_gvxys"]
-atlas = ExtResource("1_0mukf")
+atlas = ExtResource("2_wlbto")
 region = Rect2(32, 32, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_5qymo"]
-atlas = ExtResource("1_0mukf")
+atlas = ExtResource("2_wlbto")
 region = Rect2(64, 32, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_i4gq2"]
-atlas = ExtResource("1_0mukf")
+atlas = ExtResource("2_wlbto")
 region = Rect2(0, 64, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_7nda2"]
-atlas = ExtResource("1_0mukf")
+atlas = ExtResource("2_wlbto")
 region = Rect2(32, 64, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_xgrew"]
-atlas = ExtResource("1_0mukf")
+atlas = ExtResource("2_wlbto")
 region = Rect2(64, 64, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_h8ugb"]
-atlas = ExtResource("1_0mukf")
+atlas = ExtResource("2_wlbto")
 region = Rect2(0, 96, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_uerbb"]
-atlas = ExtResource("1_0mukf")
+atlas = ExtResource("2_wlbto")
 region = Rect2(32, 96, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_t6u5m"]
-atlas = ExtResource("1_0mukf")
+atlas = ExtResource("2_wlbto")
 region = Rect2(64, 96, 32, 32)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_1j7wn"]
@@ -126,10 +126,10 @@ animations = [{
 radius = 12.0
 height = 34.0
 
-[node name="Player" type="CharacterBody2D" unique_id=777774464]
+[node name="Player" type="CharacterBody2D" unique_id=777774464 groups=["player"]]
 z_index = 9
 scale = Vector2(0.5, 0.5)
-script = ExtResource("1_bof8o")
+script = ExtResource("1_jymq8")
 
 [node name="Animation" type="AnimatedSprite2D" parent="." unique_id=1488795725]
 scale = Vector2(2, 2)

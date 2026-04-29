@@ -32,4 +32,4 @@ func on_connection_error() -> void:
 	start.text = original_text
 
 func load_multiplayer_scene() -> void:
-	get_tree().change_scene_to_file("res://prototype/scenes/legacy/multiplayer.tscn")
+	get_tree().change_scene_to_file("res://prototype/scenes/menu/multiplayer.tscn")

@@ -1,9 +1,10 @@
-[gd_scene load_steps=21 format=3 uid="uid://b8vcrl4rxjfy"]
+[gd_scene format=3 uid="uid://b8vcrl4rxjfy"]
 
-[ext_resource type="Texture2D" uid="uid://15wxktk44cyb" path="res://assets/sprites/characters/npcs/bernadeteCharacter.png" id="1_7eccb"]
-[ext_resource type="Script" uid="uid://fgdo85xswlpn" path="res://scripts/npcMovement.gd" id="1_w8ogy"]
-[ext_resource type="PackedScene" uid="uid://v58rm88kq60w" path="res://scenes/tasks.tscn" id="3_w8ogy"]
-[ext_resource type="Script" uid="uid://dv17kh6k2vjei" path="res://scripts/bernadeteNpcData.gd" id="4_a3a10"]
+[ext_resource type="Texture2D" uid="uid://15wxktk44cyb" path="res://prototype/assets/sprites/characters/npcs/bernadeteCharacter.png" id="1_7eccb"]
+[ext_resource type="Script" path="res://scripts/npcMovement.gd" id="1_w8ogy"]
+[ext_resource type="PackedScene" uid="uid://v58rm88kq60w" path="res://prototype/scenes/new/tasks.tscn" id="3_w8ogy"]
+[ext_resource type="Script" path="res://scripts/bernadeteNpcData.gd" id="4_a3a10"]
+
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_lspie"]
 size = Vector2(10, 10)

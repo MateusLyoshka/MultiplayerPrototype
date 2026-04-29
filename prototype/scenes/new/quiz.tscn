@@ -1,10 +1,11 @@
-[gd_scene load_steps=9 format=4 uid="uid://ra3ppxoo1jbr"]
+[gd_scene format=4 uid="uid://ra3ppxoo1jbr"]
 
-[ext_resource type="Script" uid="uid://ch1074ehjkssy" path="res://scripts/quiz.gd" id="1_27bjs"]
-[ext_resource type="Texture2D" uid="uid://olhwo62im8ig" path="res://assets/sprites/quiz/quizBackground.png" id="2_jng0p"]
-[ext_resource type="Texture2D" uid="uid://bidroxrf0ynjp" path="res://assets/sprites/quiz/button_wood.png" id="3_2fkxq"]
-[ext_resource type="PackedScene" uid="uid://v58rm88kq60w" path="res://scenes/tasks.tscn" id="4_3bubg"]
-[ext_resource type="Script" uid="uid://dt0y2npd3rjwa" path="res://scripts/pdf_exporter.gd" id="5_w5ac1"]
+[ext_resource type="Script" path="res://scripts/quiz.gd" id="1_27bjs"]
+[ext_resource type="Texture2D" uid="uid://olhwo62im8ig" path="res://prototype/assets/sprites/quiz/quizBackground.png" id="2_jng0p"]
+[ext_resource type="Texture2D" uid="uid://bidroxrf0ynjp" path="res://prototype/assets/sprites/quiz/button_wood.png" id="3_2fkxq"]
+[ext_resource type="PackedScene" uid="uid://v58rm88kq60w" path="res://prototype/scenes/new/tasks.tscn" id="4_3bubg"]
+[ext_resource type="Script" path="res://scripts/pdf_exporter.gd" id="5_w5ac1"]
+
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_2fkxq"]
 texture = ExtResource("2_jng0p")

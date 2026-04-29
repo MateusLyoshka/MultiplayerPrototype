@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://bvwfdv6cltko1"]
 
-[ext_resource type="PackedScene" uid="uid://dnnk20ejw87e6" path="res://prototype/scenes/legacy/pause_control.tscn" id="1_kox51"]
-[ext_resource type="PackedScene" uid="uid://nos1s3ei7bbe" path="res://prototype/scenes/legacy/chat.tscn" id="1_v8mux"]
-[ext_resource type="PackedScene" uid="uid://dj75hacb2m7bp" path="res://prototype/scenes/legacy/player_spawner.tscn" id="3_pcuun"]
+[ext_resource type="PackedScene" uid="uid://dnnk20ejw87e6" path="res://prototype/scenes/in_game_reusables/pause_control.tscn" id="1_kox51"]
+[ext_resource type="PackedScene" uid="uid://nos1s3ei7bbe" path="res://prototype/scenes/in_game_reusables/chat.tscn" id="1_v8mux"]
+[ext_resource type="PackedScene" uid="uid://dj75hacb2m7bp" path="res://prototype/scenes/in_game_reusables/player_spawner.tscn" id="3_pcuun"]
 
 [node name="Control" type="Control" unique_id=785532577]
 layout_mode = 3
