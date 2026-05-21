@@ -10,12 +10,13 @@ func _init() -> void:
 #Send a join request packet to the server
 func _on_join_button_down() -> void:
 	#print(("Room"),id, ClientPacketHandler.client_id)
-	JoinRequestClass.create(id, ClientPacketHandler.my_id).send(ProtNetworkHandler.server_peer)
+	JoinRequestClass.create(id, ClientPacketHandler.my_id, ClientPacketHandler.temporary_player_name).send(ProtNetworkHandler.server_peer)
 	#print("(Room) ID: ", id)
 
-#Room receive its respective id
-func setup_room(room_id: int) -> void:
-	id = room_id
+func setup_room(summary: RoomSummary) -> void:
+	id = summary.id
+	$HBoxContainer/VBoxContainer/Label.text = "%d/4 jogadores" % summary.player_count
+	$HBoxContainer/Players.text = "\n".join(summary.player_names)
 
 func join_room(room_id: int) -> void:
 	if room_id == id:

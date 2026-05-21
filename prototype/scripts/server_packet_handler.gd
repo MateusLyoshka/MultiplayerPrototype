@@ -37,13 +37,15 @@ func save_room_info(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 	var new_room: RoomStorage = RoomStorage.new(room_packet.host_ip, room_packet.room_port, peer)
 	new_room.add_player(peer)
 	new_room.add_player_id(room_packet.player_id)
+	new_room.add_player_name(room_packet.player_name)
+	peer.set_meta("name", room_packet.player_name)
 	created_rooms_id.append(room_id)
 	rooms[room_id] = new_room
 	peer.set_meta("in_room", true)
 	print("(Server handler) info saved: ", rooms)
 
 func send_refresh(peer: ENetPacketPeer) -> void:
-	RefreshClass.create(created_rooms_id).send(peer)
+	RefreshClass.create(rooms, created_rooms_id).send(peer)
 
 func join_request(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 	var request: JoinRequestClass = JoinRequestClass.create_from_data(data)
@@ -56,6 +58,8 @@ func join_request(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 		return
 	rooms[room].add_player(peer)
 	rooms[room].add_player_id(request.player_id)
+	rooms[room].add_player_name(request.player_name)
+	peer.set_meta("name", request.player_name)
 	peer.set_meta("in_room", true)
 	JoinRoomClass.create(room, rooms[room].port, rooms[room].host_ip, rooms[room].current_players_id).send(peer)
 	for i in range(rooms[room].current_players_id.size()):
@@ -92,6 +96,7 @@ func quit_room_request(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 
 	room.remove_player(peer)
 	room.remove_player_id(quit_request.player_id)
+	room.remove_player_name(peer.get_meta("name", ""))
 	peer.set_meta("in_room", false)
 	QuitRoomClass.create().send(peer)
 	for current_peer in room.current_players:

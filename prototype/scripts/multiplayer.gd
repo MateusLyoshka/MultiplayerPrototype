@@ -20,20 +20,23 @@ func _on_new_room_button_down() -> void:
 func _on_refresh_button_down() -> void:
 	RefreshRequestClass.create().send(ProtNetworkHandler.server_peer)
 
-func refresh_rooms(rooms_id: Array[int]) -> void:
+func refresh_rooms(summaries: Array[RoomSummary]) -> void:
 	for child in room_list_container.get_children():
 		child.queue_free()
-	for i in rooms_id.size():
-		add_room_to_list(rooms_id[i])
+	for summary in summaries:
+		add_room_to_list(summary)
 
 func create_join_room(room_id: int) -> void:
+	var summary: RoomSummary = RoomSummary.new()
+	summary.id = room_id
+	summary.player_count = 1
+	summary.player_names = [ClientPacketHandler.temporary_player_name]
 	var room_item: RoomItem = ROOM.instantiate()
 	room_list_container.add_child(room_item)
-	room_item.setup_room(room_id)
+	room_item.setup_room(summary)
 	room_item.auto_join()
 
-func add_room_to_list(room_id: int) -> void:
+func add_room_to_list(summary: RoomSummary) -> void:
 	var room_item: RoomItem = ROOM.instantiate()
 	room_list_container.add_child(room_item)
-	room_item.setup_room(room_id)
-	#print("room instanciated")
+	room_item.setup_room(summary)

@@ -1,7 +1,7 @@
 extends Node
 
 signal created_room(room_id: int)
-signal room_refresh(rooms_id: Array[int])
+signal room_refresh(summaries: Array[RoomSummary])
 signal join_room(room_id: int)
 signal quit_room()
 signal spawn_player_signal(player_id: int)
@@ -32,9 +32,7 @@ func packet_handler(data: PackedByteArray) -> void:
 			quit_room.emit()
 		PacketTypeClass.PACKET_TYPE.REFRESH:
 			var refresh: RefreshClass = RefreshClass.create_from_data(data)
-			var rooms_id: Array[int] = refresh.rooms_id
-			rooms_id.pop_front()
-			room_refresh.emit(rooms_id)
+			room_refresh.emit(refresh.summaries)
 		PacketTypeClass.PACKET_TYPE.HAS_JOINED:
 			var has_joined: HasJoinedPkt = HasJoinedPkt.create_from_data(data)
 			sync_spawns(has_joined.remote_ids)
@@ -58,7 +56,7 @@ func start_room(data: PackedByteArray) -> void:
 	my_ip = get_ipv4()
 	room_port = get_random_port()
 	
-	RoomInfoClass.create(ClientPacketHandler.my_id, current_room_id, room_port, my_ip).send(ProtNetworkHandler.server_peer)
+	RoomInfoClass.create(ClientPacketHandler.my_id, current_room_id, room_port, my_ip, temporary_player_name).send(ProtNetworkHandler.server_peer)
 	GamePacketHandler.start_host(my_ip, room_port)
 	spawn_player(my_id)
 	print("(Client handler) room id: ", room_packet.room)

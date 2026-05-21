@@ -1,10 +1,19 @@
 class_name RefreshClass extends PacketTypeClass
 
-var rooms_id: Array[int]
+var summaries: Array[RoomSummary]
 
-static func create(rooms: Array[int]) -> RefreshClass:
+static func create(rooms_data: Dictionary, rooms_id: Array[int]) -> RefreshClass:
 	var refresh: RefreshClass = RefreshClass.new(PacketTypeClass.PACKET_TYPE.REFRESH, ENetPacketPeer.FLAG_RELIABLE)
-	refresh.rooms_id = rooms
+	refresh.summaries = []
+	for room_id in rooms_id:
+		if not rooms_data.has(room_id):
+			continue
+		var room: RoomStorage = rooms_data[room_id]
+		var summary: RoomSummary = RoomSummary.new()
+		summary.id = room_id
+		summary.player_count = room.current_players.size()
+		summary.player_names = room.current_players_names.duplicate()
+		refresh.summaries.append(summary)
 	return refresh
 
 static func create_from_data(data: PackedByteArray) -> RefreshClass:
@@ -12,17 +21,34 @@ static func create_from_data(data: PackedByteArray) -> RefreshClass:
 	refresh.decode(data)
 	return refresh
 
+func encode() -> PackedByteArray:
+	var buf: PackedByteArray = super.encode()
+	buf.append(summaries.size())
+	for summary in summaries:
+		buf.append(summary.id)
+		buf.append(summary.player_count)
+		for name in summary.player_names:
+			var name_bytes: PackedByteArray = name.to_utf8_buffer()
+			buf.append(name_bytes.size())
+			buf.append_array(name_bytes)
+	return buf
+
 func decode(data: PackedByteArray) -> void:
 	super.decode(data)
-	var new_rooms: Array[int]
-	#print(data.size())
-	for i in range(1, data.size()):
-		new_rooms.append(data.decode_u8(i))
-	rooms_id = new_rooms
-
-func encode() -> PackedByteArray:
-	var new_packet: PackedByteArray = super.encode()
-	new_packet.resize(2 + rooms_id.size())
-	for i in rooms_id.size():
-		new_packet.encode_u8(2 + i, rooms_id[i])
-	return new_packet
+	summaries = []
+	var offset: int = 1
+	var num_rooms: int = data.decode_u8(offset)
+	offset += 1
+	for _r in range(num_rooms):
+		var summary: RoomSummary = RoomSummary.new()
+		summary.id = data.decode_u8(offset)
+		offset += 1
+		summary.player_count = data.decode_u8(offset)
+		offset += 1
+		summary.player_names = []
+		for _p in range(summary.player_count):
+			var name_size: int = data.decode_u8(offset)
+			offset += 1
+			summary.player_names.append(data.slice(offset, offset + name_size).get_string_from_utf8())
+			offset += name_size
+		summaries.append(summary)
