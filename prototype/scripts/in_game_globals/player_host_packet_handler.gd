@@ -3,12 +3,17 @@ extends Node
 # player signal
 signal player_movement_signal(data: PackedByteArray)
 signal player_text_signal(data: PackedByteArray)
+signal player_change_scene_signal(peer: ENetPacketPeer, data: PackedByteArray)
 
 # host signal
 signal host_movement_signal(data: PackedByteArray)
 signal host_text_signal(data: PackedByteArray)
+signal host_change_scene_signal(data: PackedByteArray)
 
 var is_host: bool
+
+# host var
+var peerScenes : Dictionary[ENetPacketPeer, String]
 
 func setup_packet_handler() -> void:
 	is_host = GamePacketHandler.is_host
@@ -24,6 +29,8 @@ func player_packet_handler(_peer: ENetPacketPeer, data: PackedByteArray) -> void
 			player_movement_signal.emit(data)
 		InGameTypeClass.PACKET_TYPE.TEXT_PACKET:
 			player_text_signal.emit(data)
+		InGameTypeClass.PACKET_TYPE.SCENE_SYNC_PACKET:
+			player_change_scene_signal.emit(_peer, data)
 
 func host_packet_handler(data: PackedByteArray) -> void:
 	var packet_type = data.decode_u8(0)
@@ -32,4 +39,9 @@ func host_packet_handler(data: PackedByteArray) -> void:
 			host_movement_signal.emit(data)
 		InGameTypeClass.PACKET_TYPE.TEXT_PACKET:
 			host_text_signal.emit(data)
-			
+		InGameTypeClass.PACKET_TYPE.SCENE_SYNC_PACKET:
+			host_change_scene_signal.emit(data)
+	
+func sync_scene(peer: ENetPacketPeer,data: PackedByteArray) -> void:
+	var syncPacket: SceneSyncPacket = SceneSyncPacket.create_from_data(data);;
+	peerScenes[peer] = syncPacket.scene_path;

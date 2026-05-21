@@ -12,6 +12,8 @@ var time_since_last_packet: float = 0.0
 var last_sent_position: Vector2
 #var last_sent_animation: String
 
+var players_scenes: Dictionary[int, String]
+
 var owner_id: int
 var is_host: bool
 var is_authority: bool:
@@ -34,9 +36,14 @@ func setup_camera() -> void:
 
 func setup_player() -> void:
 	if is_host:
-		PlayerHostPacketHandler.player_movement_signal.connect(player_packet_handler)
+		PlayerHostPacketHandler.player_movement_signal.connect(player_movement_packet_handler)
+		PlayerHostPacketHandler.player_change_scene_signal.connect(player_scene_change_packet_handler)
 	else:
-		PlayerHostPacketHandler.host_movement_signal.connect(host_packet_handler)
+		PlayerHostPacketHandler.host_movement_signal.connect(host_movement_packet_handler)
+		PlayerHostPacketHandler.host_change_scene_signal.connect(host_scene_change_packet_handler)
+		var scene_path: String = get_tree().current_scene.scene_file_path
+		if not scene_path.is_empty() and GamePacketHandler.can_send_to_host():
+			SceneSyncPacket.create(owner_id, scene_path).send(GamePacketHandler.host_peer)
 
 func _physics_process(_delta: float) -> void:
 	if get_viewport().gui_get_focus_owner() is LineEdit:
@@ -77,7 +84,7 @@ func animate() -> void:
 		Vector2.ZERO:
 			animation.play("idle")
 
-func player_packet_handler(data: PackedByteArray) -> void:
+func player_movement_packet_handler(data: PackedByteArray) -> void:
 	var packet: PlayerDataPacket = PlayerDataPacket.create_from_data(data)
 	
 	if packet.id != owner_id:
@@ -87,10 +94,19 @@ func player_packet_handler(data: PackedByteArray) -> void:
 	animation.play(packet.animation_name)
 	PlayerDataPacket.create(owner_id, packet.position, animation.animation).broadcast(GamePacketHandler.host_connection)
 
-func host_packet_handler(data: PackedByteArray) -> void:
+func host_movement_packet_handler(data: PackedByteArray) -> void:
 	if is_authority: return
 	var packet: PlayerDataPacket = PlayerDataPacket.create_from_data(data)
 	if packet.id != owner_id:
 		return
 	global_position = packet.position
 	animation.play(packet.animation_name)
+
+func host_scene_change_packet_handler(data: PackedByteArray):
+	var scenePacket: SceneSyncPacket = SceneSyncPacket.create_from_data(data)
+	players_scenes[scenePacket.peer_id] = scenePacket.scene_path
+
+func player_scene_change_packet_handler(_peer: ENetPacketPeer, data: PackedByteArray):
+	var scenePacket: SceneSyncPacket = SceneSyncPacket.create_from_data(data)
+	players_scenes[scenePacket.peer_id] = scenePacket.scene_path
+	SceneSyncPacket.create(scenePacket.peer_id, scenePacket.scene_path).broadcast(GamePacketHandler.host_connection)

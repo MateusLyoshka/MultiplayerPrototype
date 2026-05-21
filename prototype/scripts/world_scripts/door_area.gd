@@ -5,6 +5,8 @@ extends Area2D
 
 func _on_body_entered(body: Node) -> void:
 	if body.is_in_group("player"):
+		if not body.get("is_authority"):
+			return
 		if target_scene == "":
 			push_warning("Porta sem destino definido!")
 			return

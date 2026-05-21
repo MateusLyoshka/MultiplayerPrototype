@@ -6,8 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://j1t017wtsyk3" path="res://prototype/assets/sprites/tileSets/buildings/cafeteria/objectsTiles03.png" id="5_623ox"]
 [ext_resource type="Texture2D" uid="uid://bfc6b85c7gbho" path="res://prototype/assets/sprites/tileSets/buildings/computers/computerTile.png" id="7_dcekd"]
 [ext_resource type="Texture2D" uid="uid://bx3s3rtrbs4dm" path="res://prototype/assets/sprites/tileSets/buildings/computers/routerTile.png" id="7_qlf1m"]
-[ext_resource type="PackedScene" uid="uid://dj75hacb2m7bp" path="res://prototype/scenes/in_game_reusables/player_spawner.tscn" id="8_dcnq0"]
-[ext_resource type="PackedScene" uid="uid://v58rm88kq60w" path="res://prototype/scenes/new/tasks.tscn" id="13_djdrk"]
+[ext_resource type="PackedScene" uid="uid://bvpu23uhi1oqg" path="res://prototype/scenes/in_game_reusables/scene_spawner_component.tscn" id="8_egtq1"]
 [ext_resource type="PackedScene" uid="uid://ci6u83ijv46vq" path="res://prototype/scenes/in_game_reusables/doorArea.tscn" id="13_s6d8l"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_0n48d"]
@@ -202,19 +201,14 @@ tile_set = SubResource("TileSet_2ax70")
 format = 2
 layer_0/tile_data = PackedInt32Array(-196578, 0, 0, -196580, 1, 2)
 
-[node name="DoorArea" parent="." unique_id=386182355 instance=ExtResource("13_s6d8l")]
-position = Vector2(242, 350)
-script = null
-
 [node name="Worldpos" type="Marker2D" parent="." unique_id=590597245]
 position = Vector2(242, 350)
 
-[node name="PlayerSpawner" parent="." unique_id=1281485086 instance=ExtResource("8_dcnq0")]
-position = Vector2(243, 314)
+[node name="SceneSpawner" parent="." unique_id=442390509 instance=ExtResource("8_egtq1")]
+position = Vector2(243, 301)
 
-[node name="Tasks" parent="." unique_id=95793291 instance=ExtResource("13_djdrk")]
-script = null
+[node name="DoorArea" parent="." unique_id=1151928510 instance=ExtResource("13_s6d8l")]
+position = Vector2(242, 353)
+target_scene = "uid://co71tgl480phx"
 
 [connection signal="finished" from="BgCafeteria" to="BgCafeteria" method="_on_finished"]
-[connection signal="body_entered" from="DoorArea" to="DoorArea" method="_on_body_entered"]
-[connection signal="body_exited" from="DoorArea" to="DoorArea" method="_on_body_exited"]
