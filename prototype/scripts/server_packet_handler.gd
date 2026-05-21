@@ -6,6 +6,16 @@ var rooms: Dictionary[int, RoomStorage]
 
 func _ready() -> void:
 	ProtNetworkHandler.from_client_packet.connect(client_packet_handler)
+	var refresh_timer: Timer = Timer.new()
+	refresh_timer.wait_time = 5.0
+	refresh_timer.autostart = true
+	refresh_timer.timeout.connect(_on_refresh_tick)
+	add_child(refresh_timer)
+
+func _on_refresh_tick() -> void:
+	for peer in ProtNetworkHandler.peers_connected.values():
+		if not peer.get_meta("in_room", false):
+			send_refresh(peer)
 
 func client_packet_handler(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 	var packet_type: int = int(data.decode_u8(0))
@@ -29,6 +39,7 @@ func save_room_info(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 	new_room.add_player_id(room_packet.player_id)
 	created_rooms_id.append(room_id)
 	rooms[room_id] = new_room
+	peer.set_meta("in_room", true)
 	print("(Server handler) info saved: ", rooms)
 
 func send_refresh(peer: ENetPacketPeer) -> void:
@@ -45,6 +56,7 @@ func join_request(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 		return
 	rooms[room].add_player(peer)
 	rooms[room].add_player_id(request.player_id)
+	peer.set_meta("in_room", true)
 	JoinRoomClass.create(room, rooms[room].port, rooms[room].host_ip, rooms[room].current_players_id).send(peer)
 	for i in range(rooms[room].current_players_id.size()):
 		if rooms[room].current_players[i] != peer:
@@ -70,6 +82,7 @@ func quit_room_request(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 	var room: RoomStorage = rooms[room_req_id]
 	if peer == room.host_peer:
 		for current_peer in room.current_players.duplicate():
+			current_peer.set_meta("in_room", false)
 			QuitRoomClass.create().send(current_peer)
 		rooms.erase(room_req_id)
 		created_rooms_id.erase(room_req_id)
@@ -79,6 +92,7 @@ func quit_room_request(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 
 	room.remove_player(peer)
 	room.remove_player_id(quit_request.player_id)
+	peer.set_meta("in_room", false)
 	QuitRoomClass.create().send(peer)
 	for current_peer in room.current_players:
 		HasQuittedPkt.create(room.current_players_id).send(current_peer)
