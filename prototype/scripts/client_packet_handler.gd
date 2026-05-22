@@ -5,6 +5,7 @@ signal room_refresh(summaries: Array[RoomSummary])
 signal join_room(room_id: int)
 signal quit_room()
 signal spawn_player_signal(player_id: int)
+signal player_scene_changed(player_id: int, scene_path: String)
 
 var my_ip: String
 var room_port: int
@@ -13,8 +14,12 @@ var my_id: int = -1
 var temporary_player_name: String = "player"
 var current_room_id: int
 var spawned_ids: Array[int]
+var players_scenes: Dictionary[int, String] = {}
+
 func _ready() -> void:
 	ProtNetworkHandler.from_server_packet.connect(packet_handler)
+	PlayerHostPacketHandler.host_change_scene_signal.connect(on_scene_sync_received)
+	PlayerHostPacketHandler.player_change_scene_signal.connect(on_player_scene_received)
 
 func packet_handler(data: PackedByteArray) -> void:
 	var packet_type: int = int(data.decode_u8(0))
@@ -97,3 +102,16 @@ func despawn_player(spawn_id: int) -> void:
 func spawn_player(spawn_id: int) -> void:
 	spawn_player_signal.emit(spawn_id)
 	spawned_ids.append(spawn_id)
+
+func on_scene_sync_received(data: PackedByteArray) -> void:
+	var packet: SceneSyncPacket = SceneSyncPacket.create_from_data(data)
+	if packet.peer_id == my_id:
+		return
+	players_scenes[packet.peer_id] = packet.scene_path
+	player_scene_changed.emit(packet.peer_id, packet.scene_path)
+
+func on_player_scene_received(_peer: ENetPacketPeer, data: PackedByteArray) -> void:
+	var packet: SceneSyncPacket = SceneSyncPacket.create_from_data(data)
+	players_scenes[packet.peer_id] = packet.scene_path
+	SceneSyncPacket.create(packet.peer_id, packet.scene_path).broadcast(GamePacketHandler.host_connection)
+	player_scene_changed.emit(packet.peer_id, packet.scene_path)

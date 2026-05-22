@@ -2,7 +2,7 @@
 
 **Data:** 2026-05-19
 **Autor:** Mateus Santos Fernandes
-**Status:** Design aprovado, pronto para plano de implementação
+**Status:** Em andamento — itens 1, 2, 3, 4 concluídos (2026-05-22); item 5 pendente
 
 ## 1. Contexto
 
@@ -10,10 +10,10 @@ O protótipo atual já entrega: arquitetura distribuída cliente-servidor para o
 
 Este documento descreve as cinco frentes restantes para fechar a entrega do TCC 2:
 
-1. Fix de colisão do Player com estruturas do mundo
-2. Refresh automático do lobby (5 s) + envio no momento da conexão
-3. Informação enriquecida das salas nos cards (contagem + nomes dos jogadores)
-4. Conclusão da sincronização de cena (lado reativo: spawn/despawn condicional)
+1. ✅ Fix de colisão do Player com estruturas do mundo
+2. ✅ Refresh automático do lobby (5 s) + envio no momento da conexão
+3. ✅ Informação enriquecida das salas nos cards (contagem + nomes dos jogadores)
+4. ✅ Conclusão da sincronização de cena (lado reativo: spawn/despawn condicional)
 5. Minigame cooperativo 2 vs 2 + persistência dos resultados no servidor central
 
 ## 2. Ordem de execução recomendada
@@ -26,7 +26,7 @@ Cada item destrava ou facilita o teste do próximo:
 4. **Minigame 2 vs 2** — bloco maior; depende de scene sync.
 5. **Persistência de resultados no servidor** — última, conecta o minigame ao servidor central.
 
-## 3. Item 1 — Colisão do Player com estruturas
+## 3. Item 1 — Colisão do Player com estruturas ✅ CONCLUÍDO (2026-05-22)
 
 ### 3.1 Diagnóstico
 
@@ -46,7 +46,7 @@ Cada item destrava ou facilita o teste do próximo:
 - Andar contra paredes, mesas e bancadas em `cafeteria.tscn`, `university.tscn`, `world.tscn`. Player deve parar; `move_and_slide()` continua respondendo ao input mas o `velocity` é absorvido pela colisão.
 - Validar que portas (`doorArea.tscn`) continuam funcionando — elas são `Area2D` (não respeitam mask de solid body, dependem apenas de `monitoring`).
 
-## 4. Item 2 — Refresh automático do lobby
+## 4. Item 2 — Refresh automático do lobby ✅ CONCLUÍDO (2026-05-22)
 
 ### 4.1 Comportamento desejado
 
@@ -91,7 +91,7 @@ Cada item destrava ou facilita o teste do próximo:
 - Apertar botão manual — atualização imediata (sem esperar o ciclo de 5 s).
 - Cliente A entra numa sala → não recebe mais pacotes `REFRESH` (verificável via prints temporários).
 
-## 5. Item 3 — Informação das salas nos cards (count + nomes)
+## 5. Item 3 — Informação das salas nos cards (count + nomes) ✅ CONCLUÍDO (2026-05-22)
 
 ### 5.1 Reformulação do `RefreshClass`
 
@@ -181,7 +181,7 @@ func setup_room(summary: RoomSummary) -> void:
 - 2º jogador entra. O card no cliente que ainda está no lobby passa a mostrar "2/4" e dois nomes dentro de 5 s.
 - O jogador sai. Card volta para "1/4". O host sai. Card desaparece.
 
-## 6. Item 4 — Scene sync (lado reativo)
+## 6. Item 4 — Scene sync (lado reativo) ✅ CONCLUÍDO (2026-05-22)
 
 ### 6.1 Estado atual
 
@@ -246,6 +246,14 @@ Isso garante que o `PlayerSpawner` da nova cena, ao instanciar imediatamente, j�
 ### 6.4 Risco: reentrância
 
 Se um player muda de cena, recebe seu próprio `SceneSyncPacket` rebroadcastado pelo host, e atualiza `players_scenes[my_id]` novamente. Idempotente (mesmo valor), mas vale registrar que `ClientPacketHandler.on_scene_sync_received` deve filtrar `if peer_id == my_id: return` para evitar dupla emissão do sinal.
+
+### 6.5 Notas de implementação (desvios do design)
+
+Durante a implementação (2026-05-22) dois pontos divergiram do que estava previsto acima:
+
+- **Host envia `my_id`, não `0`.** O design (seção 6.1 herdada) usava `SceneSyncPacket.create(0, path)` no broadcast do host, com `0` como sentinela. Isso impedia os players de saber em qual cena o host está. `GameManager._deferred_goto_scene` agora envia `ClientPacketHandler.my_id` tanto no caminho host quanto no player, de modo que `players_scenes` rastreia o host corretamente.
+
+- **`PlayerSpawner` reprocessa spawns no próprio `_ready()`.** O design assumia que toda cena de jogo teria um `SceneSpawner` (via `scene_spawner_component.tscn`) para re-emitir `spawn_player_signal` ao carregar. Porém `world.tscn` e `leaving_room.tscn` instanciam apenas `player_spawner.tscn`, sem `SceneSpawner` — então nenhum jogador aparecia nelas. Solução: `spawn_player.gd` ganhou um `_ready()` que reprocessa `ClientPacketHandler.spawned_ids` por conta própria, mais uma checagem de idempotência (`_has_player`) para não duplicar o spawn em cenas que têm os dois componentes. Com isso o `SceneSpawner` tornou-se redundante (mas inofensivo).
 
 ## 7. Item 5 — Minigame cooperativo 2 vs 2
 
@@ -591,11 +599,11 @@ O arquivo `user://match_reports.csv` resolve para `%APPDATA%/Godot/app_userdata/
 
 | Item | Teste manual mínimo |
 |---|---|
-| Colisão | Andar contra parede em cafeteria, university, world — player não atravessa |
-| Refresh auto | Cliente conecta ao servidor e vê salas existentes sem clicar; lista atualiza-se sozinha em ≤5 s |
-| Refresh manual | Botão continua funcionando (atualização imediata, paralelo ao automático) |
-| Info de sala | Card mostra "X/4" e os nomes; entradas e saídas refletem dentro de 5 s |
-| Scene sync | Players visíveis apenas para quem está na mesma cena; teleporte coerente |
+| ✅ Colisão | Andar contra parede em cafeteria, university, world — player não atravessa |
+| ✅ Refresh auto | Cliente conecta ao servidor e vê salas existentes sem clicar; lista atualiza-se sozinha em ≤5 s |
+| ✅ Refresh manual | Botão continua funcionando (atualização imediata, paralelo ao automático) |
+| ✅ Info de sala | Card mostra "X/4" e os nomes; entradas e saídas refletem dentro de 5 s |
+| ✅ Scene sync | Players visíveis apenas para quem está na mesma cena; teleporte coerente |
 | Minigame (host) | Trigger no NPC funciona apenas para host e somente com 4 conectados |
 | Minigame (papéis) | DOC e QUIZ corretos para cada player; ordem determinística (sort de ids) |
 | Minigame (chat) | Mensagens só chegam ao parceiro durante o minigame |

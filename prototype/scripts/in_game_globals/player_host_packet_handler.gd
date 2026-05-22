@@ -12,9 +12,6 @@ signal host_change_scene_signal(data: PackedByteArray)
 
 var is_host: bool
 
-# host var
-var peerScenes : Dictionary[ENetPacketPeer, String]
-
 func setup_packet_handler() -> void:
 	is_host = GamePacketHandler.is_host
 	if is_host:
@@ -42,6 +39,3 @@ func host_packet_handler(data: PackedByteArray) -> void:
 		InGameTypeClass.PACKET_TYPE.SCENE_SYNC_PACKET:
 			host_change_scene_signal.emit(data)
 	
-func sync_scene(peer: ENetPacketPeer,data: PackedByteArray) -> void:
-	var syncPacket: SceneSyncPacket = SceneSyncPacket.create_from_data(data);;
-	peerScenes[peer] = syncPacket.scene_path;
