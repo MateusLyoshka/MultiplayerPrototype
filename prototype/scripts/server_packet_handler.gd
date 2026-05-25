@@ -95,7 +95,7 @@ func quit_room_request(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 		return
 
 	room.remove_player(peer)
-	room.remove_player_id(quit_request.player_id)
+	room.remove_player_id(peer.get_meta("id"))
 	room.remove_player_name(peer.get_meta("name", ""))
 	peer.set_meta("in_room", false)
 	QuitRoomClass.create().send(peer)

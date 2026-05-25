@@ -2,7 +2,7 @@
 
 **Data:** 2026-05-19
 **Autor:** Mateus Santos Fernandes
-**Status:** Em andamento — itens 1, 2, 3, 4 concluídos (2026-05-22); item 5 pendente
+**Status:** Em andamento — itens 1, 2, 3, 4 concluídos (2026-05-22); item 5 em andamento — Fase 1/6 concluída (2026-05-23); fases 2 a 6 pendentes
 
 ## 1. Contexto
 
@@ -14,7 +14,7 @@ Este documento descreve as cinco frentes restantes para fechar a entrega do TCC 
 2. ✅ Refresh automático do lobby (5 s) + envio no momento da conexão
 3. ✅ Informação enriquecida das salas nos cards (contagem + nomes dos jogadores)
 4. ✅ Conclusão da sincronização de cena (lado reativo: spawn/despawn condicional)
-5. Minigame cooperativo 2 vs 2 + persistência dos resultados no servidor central
+5. Minigame cooperativo 2 vs 2 + persistência dos resultados no servidor central — 🟡 Fase 1/6 concluída (2026-05-23)
 
 ## 2. Ordem de execução recomendada
 
@@ -256,6 +256,19 @@ Durante a implementação (2026-05-22) dois pontos divergiram do que estava prev
 - **`PlayerSpawner` reprocessa spawns no próprio `_ready()`.** O design assumia que toda cena de jogo teria um `SceneSpawner` (via `scene_spawner_component.tscn`) para re-emitir `spawn_player_signal` ao carregar. Porém `world.tscn` e `leaving_room.tscn` instanciam apenas `player_spawner.tscn`, sem `SceneSpawner` — então nenhum jogador aparecia nelas. Solução: `spawn_player.gd` ganhou um `_ready()` que reprocessa `ClientPacketHandler.spawned_ids` por conta própria, mais uma checagem de idempotência (`_has_player`) para não duplicar o spawn em cenas que têm os dois componentes. Com isso o `SceneSpawner` tornou-se redundante (mas inofensivo).
 
 ## 7. Item 5 — Minigame cooperativo 2 vs 2
+
+### 7.0 Divisão em fases (definida em 2026-05-23)
+
+O Item 5 é grande o suficiente para ser quebrado em fases verificáveis isoladamente. Cada fase termina em um estado funcional que pode ser testado antes de seguir.
+
+| Fase | Escopo | Status |
+|---|---|---|
+| **1** | Trigger no mundo + teleporte de grupo + cena-esqueleto do minigame | ✅ Concluída (2026-05-23) |
+| **2** | Conteúdo do quiz (`minigame_quiz.json`) + atribuição de duplas/papéis (`MinigameAssignPkt`) + UI de `DocumentPanel`/`QuizPanel` | Pendente |
+| **3** | Loop de jogo (`MinigameAnswerPkt`, `MinigameProgressPkt`, `MinigameFinishedPkt`) + validação de respostas no host | Pendente |
+| **4** | Filtro de chat por time durante o minigame | Pendente |
+| **5** | Tela de resultados (`minigame_results.tscn`) + `MinigameResultPkt` | Pendente |
+| **6** | Persistência no servidor central (`MatchReportClass` + CSV) | Pendente |
 
 ### 7.1 Conceito
 
@@ -582,6 +595,66 @@ O arquivo `user://match_reports.csv` resolve para `%APPDATA%/Godot/app_userdata/
 10. Ambas as duplas terminam → tela de resultados aparece para todos.
 11. Verificar `user://match_reports.csv` no servidor: linha nova com timestamps e contagens corretas.
 
+### 7.12 Notas da Fase 1 (2026-05-23) — desvios e decisões
+
+A Fase 1 trouxe o trigger no mundo + o teleporte em grupo + o esqueleto da cena. Foi entregue funcionando após corrigir bugs cruzados (ver 7.13). Os desvios em relação ao design original:
+
+- **Pacote novo `SceneForcePacket` (Layer-2, enum = 12).** O design da seção 7.4 usava `GameManager.goto_scene` diretamente do `_unhandled_input` do `MinigameStarter`, supondo que o `SceneSyncPacket` do Item 4 propagaria a troca para todos. Mas o `SceneSyncPacket` é meramente **informativo** ("fulano está na cena X", usado para spawn/despawn condicional) — ele não teleporta os outros. Para que apertar E como host faça os 4 jogadores irem juntos para o minigame, precisamos de um pacote distinto que carrega a semântica "vá para esta cena agora". Daí o `SceneForcePacket(scene_path)`. Quando o host aperta E, ele faz `broadcast(SceneForcePacket)` para os 3 players **e** `GameManager.goto_scene` para si. Cada player, ao receber, chama `GameManager.goto_scene(packet.scene_path)`, que por sua vez dispara o fluxo normal de `SceneSyncPacket` do Item 4 — mantendo `players_scenes` consistente em todos os peers.
+
+- **`minigame_quiz.tscn` é `Control` (não `Node2D`).** O design da seção 7.3 usa `Node2D` como raiz. Como a cena do minigame é puramente UI (sem mundo, sem personagem andando), `Control` é o tipo mais apropriado e simplifica o layout (anchors, sem precisar lidar com câmera).
+
+- **Input action `interact` adicionada ao `project.godot`.** Tecla E (`physical_keycode 69`).
+
+- **Cena instanciada na cafeteria.** `MinigameStarter` foi colocado em `cafeteria.tscn` na posição `(243, 250)`, logo acima do spawn dos players.
+
+- **`REQUIRED_PLAYERS = 4` como const.** O design exige 4 para iniciar; em testes locais com menos instâncias, baixar essa const temporariamente é mais simples do que parametrizar.
+
+### 7.13 Bugs cruzados corrigidos durante a Fase 1 (2026-05-23)
+
+A Fase 1 expôs vários problemas pré-existentes que estavam escondidos. Listados aqui porque afetam o sistema inteiro, não só o minigame:
+
+#### UID vs `res://` em `players_scenes` (root cause encontrada por instrumentação)
+
+Os exports `@export_file("*.tscn")` em `door_area.gd` (e `minigame_starter.gd`) são gravados pelo editor como `uid://...`, não como `res://...`. `GameManager._deferred_goto_scene` passava o UID adiante (armazenava em `players_scenes`, broadcastava no `SceneSyncPacket`), enquanto `get_tree().current_scene.scene_file_path` sempre devolve o caminho resolvido `res://`. Resultado: o filtro `players_scenes.get(id, current_scene) != current_scene` em `spawn_player.gd` comparava `"uid://..." != "res://..."` e abortava o spawn dos players remotos. Manifestação: **o host era invisível para os players** — aparentemente só após re-entrada, mas na verdade desde o primeiro spawn (o host conseguia ver os players porque o filtro pula `id == my_id`, e o pacote enviado pelo player em `player.gd:setup_player` já usa `scene_file_path` resolvido).
+
+Correção: `GameManager._resolve_scene_path(path)` converte `uid://` → `res://` via `ResourceUID.text_to_id` + `ResourceUID.get_id_path`. `_deferred_goto_scene` normaliza antes de armazenar/broadcastar.
+
+#### Players grudando ao spawnar sobrepostos
+
+`Player` é `CharacterBody2D` com `collision_layer` default. Quando dois players spawnam no mesmo ponto (PlayerSpawner), o `move_and_slide` local empurra o boneco remoto, fazendo um "arrastar" o outro.
+
+Correção: em `player.gd:setup_player`, jogadores **não-autoritativos** recebem `collision_layer = 0`. Cada instância só tem um corpo sólido (o seu próprio); os outros são visuais.
+
+#### Pausa local quebrava a conexão de rede
+
+`get_tree().paused = true` pausa o `_process` de todos os nodes que herdam `PROCESS_MODE_PAUSABLE` (default). Isso parava o `service()` do ENet em `ProtNetworkHandler` e `GamePacketHandler`, fazendo a conexão dar timeout durante a pausa.
+
+Correção: ambos os autoloads setam `process_mode = Node.PROCESS_MODE_ALWAYS` no `_ready`. O `service()` continua rodando, então o player recebe pacotes mesmo pausado (os outros continuam jogando normalmente, sem perceber).
+
+#### PauseControl só existia em `leaving_room.tscn`
+
+O design original deixou o `PauseControl` apenas em `leaving_room.tscn`. Sem ele em `world.tscn` / `cafeteria.tscn` / `minigame_quiz.tscn`, o ESC não fazia nada nas cenas de gameplay.
+
+Correção: instanciar `pause_control.tscn` em cada cena de gameplay, envolto em `CanvasLayer` com `layer = 10` e `process_mode = 3`. Garante que renderiza acima do chat e o input continua respondendo durante a pausa.
+
+#### Path errado em `pause_control.gd::quit_room`
+
+A função fazia `change_scene_to_file("res://prototype/scenes/multiplayer.tscn")`, mas o arquivo real está em `res://prototype/scenes/menu/multiplayer.tscn`. Sem o fix, o Quit silenciosamente não voltava ao menu.
+
+Correção: path corrigido para `scenes/menu/multiplayer.tscn`.
+
+#### `server_packet_handler.gd::quit_room_request` crashava com player não-host
+
+A linha `room.remove_player_id(quit_request.player_id)` acessava uma propriedade `player_id` que **nunca existiu** em `QuitRequestClass` (só tem `room_id`). Erro: `Invalid access to property or key 'player_id' on a base object of type 'RefCounted (QuitRequestClass)'`. O quit do non-host sempre crashava antes de notificar os demais via `HasQuitted`, fazendo o host continuar vendo o boneco do player que saiu.
+
+Correção: usar `peer.get_meta("id")` (o servidor já armazena o id do peer no meta em `network_handler.gd:79`).
+
+#### Cleanup de conexão in-game ao sair
+
+Antes: ao receber `QUIT_ROOM`, o cliente trocava de cena mas `GamePacketHandler.host_connection` ficava pendurado até timeout, e `spawned_ids` / `players_scenes` retinham estado antigo de uma sala da qual já saiu.
+
+Correção: novo método `GamePacketHandler.cleanup_connection()` (libera `host_connection`, zera flags). `ClientPacketHandler.packet_handler` no caso `QUIT_ROOM` chama `cleanup_connection()` + zera `spawned_ids` e `players_scenes` antes do `quit_room.emit()`.
+
 ## 8. Riscos e mitigação
 
 | Risco | Mitigação |
@@ -604,12 +677,15 @@ O arquivo `user://match_reports.csv` resolve para `%APPDATA%/Godot/app_userdata/
 | ✅ Refresh manual | Botão continua funcionando (atualização imediata, paralelo ao automático) |
 | ✅ Info de sala | Card mostra "X/4" e os nomes; entradas e saídas refletem dentro de 5 s |
 | ✅ Scene sync | Players visíveis apenas para quem está na mesma cena; teleporte coerente |
-| Minigame (host) | Trigger no NPC funciona apenas para host e somente com 4 conectados |
-| Minigame (papéis) | DOC e QUIZ corretos para cada player; ordem determinística (sort de ids) |
-| Minigame (chat) | Mensagens só chegam ao parceiro durante o minigame |
-| Minigame (progresso) | ProgressLabel só atualiza dentro do próprio time |
-| Minigame (resultado) | Tela aparece para todos com mesmos dados; vencedor calculado corretamente |
-| Persistência | `user://match_reports.csv` no servidor recebe nova linha por team após cada partida |
+| ✅ Minigame Fase 1 (trigger + teleporte) | Host na cafeteria aperta E no `MinigameStarter` → todos teleportam para `minigame_quiz` |
+| ✅ Colisão player-player | Dois players spawnam no mesmo ponto sem grudar/arrastar |
+| ✅ Pausa local | ESC pausa só a instância local; outros continuam andando; pausa não desconecta da rede |
+| ✅ Quit | Player (host ou não) clica Quit → volta ao lobby; demais peers veem-no sair |
+| Minigame Fase 2 (papéis) | DOC e QUIZ corretos para cada player; ordem determinística (sort de ids) |
+| Minigame Fase 3 (progresso) | ProgressLabel só atualiza dentro do próprio time |
+| Minigame Fase 4 (chat) | Mensagens só chegam ao parceiro durante o minigame |
+| Minigame Fase 5 (resultado) | Tela aparece para todos com mesmos dados; vencedor calculado corretamente |
+| Minigame Fase 6 (persistência) | `user://match_reports.csv` no servidor recebe nova linha por team após cada partida |
 
 ## 10. Critério de "pronto" do TCC 2
 
@@ -619,5 +695,23 @@ O arquivo `user://match_reports.csv` resolve para `%APPDATA%/Godot/app_userdata/
 - `CLAUDE.md` atualizado se algum padrão arquitetural mudou (ex.: novo autoload, novo grupo de cena).
 
 ---
+
+## 11. Onde paramos (2026-05-23)
+
+**Trabalhando agora:** Item 5, Fase 2 — conteúdo do quiz + atribuição de duplas/papéis.
+
+**Estado atual confirmado funcionando:**
+
+- Itens 1-4 estáveis.
+- Fase 1 do Item 5 ao vivo: na cafeteria, host aperta E no `MinigameStarter` (com 4 jogadores conectados) e todos teleportam para `minigame_quiz.tscn` (esqueleto).
+- Colisão player-player resolvida.
+- Pausa local e quit do jogo funcionando para host e para non-host. Conexões ENet são liberadas no quit.
+
+**Próximas decisões a tomar na Fase 2:**
+
+- Confirmar formato do `minigame_quiz.json` (já especificado em 7.2 mas não criado).
+- Decidir layout final de `DocumentPanel` vs `QuizPanel` na cena `minigame_quiz.tscn` (hoje só tem o esqueleto Control + título).
+- Implementar `MinigameAssignPkt` e a lógica de atribuição determinística (sort de `spawned_ids`).
+- Definir como o cliente reage ao receber o `MinigameAssignPkt` (mostrar painel correto, esconder o outro, cronômetro local).
 
 **Próximo passo:** este documento alimenta o plano de implementação detalhado (skill `writing-plans`), que quebrará cada item em commits/PRs verificáveis.

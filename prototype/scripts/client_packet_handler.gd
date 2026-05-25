@@ -20,6 +20,7 @@ func _ready() -> void:
 	ProtNetworkHandler.from_server_packet.connect(packet_handler)
 	PlayerHostPacketHandler.host_change_scene_signal.connect(on_scene_sync_received)
 	PlayerHostPacketHandler.player_change_scene_signal.connect(on_player_scene_received)
+	PlayerHostPacketHandler.host_force_scene_signal.connect(on_force_scene_received)
 
 func packet_handler(data: PackedByteArray) -> void:
 	var packet_type: int = int(data.decode_u8(0))
@@ -34,6 +35,9 @@ func packet_handler(data: PackedByteArray) -> void:
 			join_manager(data)
 		PacketTypeClass.PACKET_TYPE.QUIT_ROOM:
 			current_room_id = -1
+			GamePacketHandler.cleanup_connection()
+			spawned_ids.clear()
+			players_scenes.clear()
 			quit_room.emit()
 		PacketTypeClass.PACKET_TYPE.REFRESH:
 			var refresh: RefreshClass = RefreshClass.create_from_data(data)
@@ -115,3 +119,7 @@ func on_player_scene_received(_peer: ENetPacketPeer, data: PackedByteArray) -> v
 	players_scenes[packet.peer_id] = packet.scene_path
 	SceneSyncPacket.create(packet.peer_id, packet.scene_path).broadcast(GamePacketHandler.host_connection)
 	player_scene_changed.emit(packet.peer_id, packet.scene_path)
+
+func on_force_scene_received(data: PackedByteArray) -> void:
+	var packet: SceneForcePacket = SceneForcePacket.create_from_data(data)
+	GameManager.goto_scene(packet.scene_path)

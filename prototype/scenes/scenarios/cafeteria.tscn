@@ -8,6 +8,8 @@
 [ext_resource type="Texture2D" uid="uid://bx3s3rtrbs4dm" path="res://prototype/assets/sprites/tileSets/buildings/computers/routerTile.png" id="7_qlf1m"]
 [ext_resource type="PackedScene" uid="uid://bvpu23uhi1oqg" path="res://prototype/scenes/in_game_reusables/scene_spawner_component.tscn" id="8_egtq1"]
 [ext_resource type="PackedScene" uid="uid://ci6u83ijv46vq" path="res://prototype/scenes/in_game_reusables/doorArea.tscn" id="13_s6d8l"]
+[ext_resource type="PackedScene" uid="uid://bmgstarter7x2q" path="res://prototype/scenes/in_game_reusables/minigame_starter.tscn" id="14_mgst"]
+[ext_resource type="PackedScene" uid="uid://dnnk20ejw87e6" path="res://prototype/scenes/in_game_reusables/pause_control.tscn" id="15_pause"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_0n48d"]
 texture = ExtResource("3_7ywh3")
@@ -210,5 +212,14 @@ position = Vector2(243, 301)
 [node name="DoorArea" parent="." unique_id=1151928510 instance=ExtResource("13_s6d8l")]
 position = Vector2(242, 353)
 target_scene = "uid://co71tgl480phx"
+
+[node name="MinigameStarter" parent="." unique_id=900100200 instance=ExtResource("14_mgst")]
+position = Vector2(243, 250)
+
+[node name="PauseLayer" type="CanvasLayer" parent="."]
+process_mode = 3
+layer = 10
+
+[node name="PauseControl" parent="PauseLayer" instance=ExtResource("15_pause")]
 
 [connection signal="finished" from="BgCafeteria" to="BgCafeteria" method="_on_finished"]

@@ -33,6 +33,8 @@ func setup_camera() -> void:
 		camera.make_current()
 
 func setup_player() -> void:
+	if not is_authority:
+		collision_layer = 0
 	if is_host:
 		PlayerHostPacketHandler.player_movement_signal.connect(player_movement_packet_handler)
 	else:

@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" uid="uid://ci6u83ijv46vq" path="res://prototype/scenes/in_game_reusables/doorArea.tscn" id="8_wtr3g"]
 [ext_resource type="Texture2D" uid="uid://dd564gnliykm1" path="res://prototype/assets/sprites/tileSets/buildings/university/universityExteriorTiles.png" id="9_m2e54"]
 [ext_resource type="PackedScene" uid="uid://nos1s3ei7bbe" path="res://prototype/scenes/in_game_reusables/chat.tscn" id="10_us8y6"]
+[ext_resource type="PackedScene" uid="uid://dnnk20ejw87e6" path="res://prototype/scenes/in_game_reusables/pause_control.tscn" id="11_pause"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ya7nt"]
 texture = ExtResource("3_7b1jm")
@@ -1008,5 +1009,11 @@ position = Vector2(-0.5, -41.5)
 shape = SubResource("RectangleShape2D_lakw3")
 
 [node name="CanvasLayer" parent="." unique_id=509079986 instance=ExtResource("10_us8y6")]
+
+[node name="PauseLayer" type="CanvasLayer" parent="."]
+process_mode = 3
+layer = 10
+
+[node name="PauseControl" parent="PauseLayer" instance=ExtResource("11_pause")]
 
 [connection signal="finished" from="BgGame" to="BgGame" method="_on_finished"]

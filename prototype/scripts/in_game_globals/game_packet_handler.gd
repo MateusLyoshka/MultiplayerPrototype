@@ -20,6 +20,9 @@ var avaliable_player_ids: Array = range(3, -1, -1)
 var host_peer: ENetPacketPeer
 var is_connected_to_host: bool = false
 
+func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
+
 func _process(_delta: float) -> void:
 	if host_connection == null: return
 	handle_events()
@@ -109,3 +112,11 @@ func host_disconnection() -> void:
 
 func can_send_to_host() -> bool:
 	return !is_host and is_connected_to_host and host_peer != null
+
+func cleanup_connection() -> void:
+	# Chamado quando o player sai do room. Setar null libera a conexão ENet
+	# para GC; sem isso o socket fica pendurado até timeout dos peers.
+	is_connected_to_host = false
+	is_host = false
+	host_peer = null
+	host_connection = null

@@ -3,7 +3,8 @@ class_name InGameTypeClass
 enum PACKET_TYPE {
 	PLAYER_PACKET = 0,
 	TEXT_PACKET = 10,
-	SCENE_SYNC_PACKET = 11
+	SCENE_SYNC_PACKET = 11,
+	SCENE_FORCE_PACKET = 12
 }
 
 var packet_type: PACKET_TYPE

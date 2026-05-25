@@ -20,8 +20,9 @@ var peers_connected: Dictionary[int, ENetPacketPeer]
 var server_peer: ENetPacketPeer
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	var args = OS.get_cmdline_args()
-	
+
 	if "--server" in args:
 		print("Initializing dedicated server")
 		start_server()
