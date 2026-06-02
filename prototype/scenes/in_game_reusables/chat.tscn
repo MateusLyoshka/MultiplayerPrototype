@@ -37,6 +37,8 @@ grow_vertical = 2
 [node name="Display" type="RichTextLabel" parent="Control/Panel/VBoxContainer" unique_id=1409546461]
 layout_mode = 2
 size_flags_vertical = 3
+bbcode_enabled = true
+scroll_following = true
 
 [node name="HBoxContainer" type="HBoxContainer" parent="Control/Panel/VBoxContainer" unique_id=1259098700]
 layout_mode = 2

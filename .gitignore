@@ -18,6 +18,8 @@ export_presets.cfg
 # Claude Code
 .claude/
 CLAUDE.md
+docs/
+docs/superpowers/specs/2026-05-19-future-work-design.md
 
 # Arquivos de editor local
 *.tmp

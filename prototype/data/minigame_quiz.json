@@ -1,0 +1,11 @@
+{
+  "document_title": "Comandos basicos de Linux",
+  "document_text": "ls — lista o conteudo do diretorio atual.\npwd — mostra o caminho do diretorio atual.\ncd <dir> — entra no diretorio informado.\nmkdir <dir> — cria um diretorio novo.\nrm <arquivo> — remove o arquivo informado.\nchmod 755 <arquivo> — define permissao rwx-rx-rx.\ncat <arquivo> — exibe o conteudo do arquivo.\nps — lista os processos do usuario.\nkill <pid> — encerra o processo de PID informado.\nman <comando> — abre o manual do comando.",
+  "questions": [
+    {"prompt": "Qual comando lista o conteudo do diretorio atual?", "answer": "ls"},
+    {"prompt": "Qual comando mostra o caminho do diretorio atual?", "answer": "pwd"},
+    {"prompt": "Qual comando da permissao 755 a um arquivo chamado run.sh?", "answer": "chmod 755 run.sh"},
+    {"prompt": "Qual comando exibe o conteudo de um arquivo chamado log.txt?", "answer": "cat log.txt"},
+    {"prompt": "Qual comando abre o manual do comando ls?", "answer": "man ls"}
+  ]
+}

@@ -95,8 +95,8 @@ Acts as the in-game packet demultiplexer based on packet type.
 
 * **Responsibility:** Subscribes to the correct `game_packet_handler` signal according to role and emits high-level signals consumed by gameplay/UI scripts.
 * **Key Signals:**
-	* Host-side receives from players: `player_movement_signal`, `player_text_signal`
-	* Client-side receives from host: `host_movement_signal`, `host_text_signal`
+	* Host-side receives from players: `player_movement_signal`, `player_text_signal`, `player_change_scene_signal`
+	* Client-side receives from host: `host_movement_signal`, `host_text_signal`, `host_change_scene_signal`, `host_force_scene_signal`, `host_minigame_assign_signal`
 
 ---
 
@@ -115,14 +115,18 @@ Acts as the in-game packet demultiplexer based on packet type.
 ### 📤 Player-Originated Packets (Player -> Host)
 
 * `PLAYER_PACKET`: Sends player movement and animation updates to the host.
-* `TEXT_PACKET`: Sends chat messages to the host.
+* `TEXT_PACKET`: Sends chat messages to the host, tagged with the sender's team identifier.
+* `SCENE_SYNC_PACKET`: Notifies the host that the player transitioned to a new scene.
 
 ### 📥 Host Broadcast Packets (Host -> Players)
 
 These packets are broadcast by the host to keep all clients synchronized:
 
 * `PLAYER_PACKET`: Broadcasts movement and animation updates to all players.
-* `TEXT_PACKET`: Broadcasts chat messages to all players.
+* `TEXT_PACKET`: Broadcasts chat messages to all players. Receivers filter messages by team during a minigame session.
+* `SCENE_SYNC_PACKET`: Rebroadcasts a player's scene transition so every client can track which player is in which scene.
+* `SCENE_FORCE_PACKET`: Commands every connected player to transition to a specific scene (used for coordinated transitions such as starting a minigame).
+* `MINIGAME_ASSIGN`: Assigns the team, role (`DOC` or `QUIZ`), partner ID, and team member list for a specific player at minigame start. Carries a `target_id` field so each receiver applies only its own assignment.
 
 ---
 

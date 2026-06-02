@@ -2,7 +2,7 @@
 
 **Data:** 2026-05-19
 **Autor:** Mateus Santos Fernandes
-**Status:** Em andamento — itens 1, 2, 3, 4 concluídos (2026-05-22); item 5 em andamento — Fase 1/6 concluída (2026-05-23); fases 2 a 6 pendentes
+**Status:** Em andamento — itens 1, 2, 3, 4 concluídos (2026-05-22); item 5 em andamento — Fases 1, 2 e 4 concluídas (2026-05-25); fases 3, 5 e 6 pendentes
 
 ## 1. Contexto
 
@@ -14,7 +14,7 @@ Este documento descreve as cinco frentes restantes para fechar a entrega do TCC 
 2. ✅ Refresh automático do lobby (5 s) + envio no momento da conexão
 3. ✅ Informação enriquecida das salas nos cards (contagem + nomes dos jogadores)
 4. ✅ Conclusão da sincronização de cena (lado reativo: spawn/despawn condicional)
-5. Minigame cooperativo 2 vs 2 + persistência dos resultados no servidor central — 🟡 Fase 1/6 concluída (2026-05-23)
+5. Minigame cooperativo 2 vs 2 + persistência dos resultados no servidor central — 🟡 Fases 1, 2 e 4/6 concluídas (2026-05-25)
 
 ## 2. Ordem de execução recomendada
 
@@ -264,9 +264,9 @@ O Item 5 é grande o suficiente para ser quebrado em fases verificáveis isolada
 | Fase | Escopo | Status |
 |---|---|---|
 | **1** | Trigger no mundo + teleporte de grupo + cena-esqueleto do minigame | ✅ Concluída (2026-05-23) |
-| **2** | Conteúdo do quiz (`minigame_quiz.json`) + atribuição de duplas/papéis (`MinigameAssignPkt`) + UI de `DocumentPanel`/`QuizPanel` | Pendente |
+| **2** | Conteúdo do quiz (`minigame_quiz.json`) + atribuição de duplas/papéis (`MinigameAssignPkt`) + UI de `DocumentPanel`/`QuizPanel` | ✅ Concluída (2026-05-25) |
 | **3** | Loop de jogo (`MinigameAnswerPkt`, `MinigameProgressPkt`, `MinigameFinishedPkt`) + validação de respostas no host | Pendente |
-| **4** | Filtro de chat por time durante o minigame | Pendente |
+| **4** | Filtro de chat por time durante o minigame | ✅ Concluída (2026-05-25) |
 | **5** | Tela de resultados (`minigame_results.tscn`) + `MinigameResultPkt` | Pendente |
 | **6** | Persistência no servidor central (`MatchReportClass` + CSV) | Pendente |
 
@@ -681,9 +681,9 @@ Correção: novo método `GamePacketHandler.cleanup_connection()` (libera `host_
 | ✅ Colisão player-player | Dois players spawnam no mesmo ponto sem grudar/arrastar |
 | ✅ Pausa local | ESC pausa só a instância local; outros continuam andando; pausa não desconecta da rede |
 | ✅ Quit | Player (host ou não) clica Quit → volta ao lobby; demais peers veem-no sair |
-| Minigame Fase 2 (papéis) | DOC e QUIZ corretos para cada player; ordem determinística (sort de ids) |
+| ✅ Minigame Fase 2 (papéis) | DOC e QUIZ corretos para cada player; ordem determinística (sort de ids) |
 | Minigame Fase 3 (progresso) | ProgressLabel só atualiza dentro do próprio time |
-| Minigame Fase 4 (chat) | Mensagens só chegam ao parceiro durante o minigame |
+| ✅ Minigame Fase 4 (chat) | Mensagens só chegam ao parceiro durante o minigame + nomes coloridos por dupla (azul=A, vermelho=B) |
 | Minigame Fase 5 (resultado) | Tela aparece para todos com mesmos dados; vencedor calculado corretamente |
 | Minigame Fase 6 (persistência) | `user://match_reports.csv` no servidor recebe nova linha por team após cada partida |
 
@@ -696,22 +696,35 @@ Correção: novo método `GamePacketHandler.cleanup_connection()` (libera `host_
 
 ---
 
-## 11. Onde paramos (2026-05-23)
+## 11. Onde paramos (2026-05-25)
 
-**Trabalhando agora:** Item 5, Fase 2 — conteúdo do quiz + atribuição de duplas/papéis.
+**Trabalhando agora:** Item 5, Fase 3 — loop de jogo (perguntas → respostas → progresso → fim). Fase 4 (chat por time) já fechada fora de ordem.
 
-**Estado atual confirmado funcionando:**
+**Estado atual confirmado:**
 
 - Itens 1-4 estáveis.
-- Fase 1 do Item 5 ao vivo: na cafeteria, host aperta E no `MinigameStarter` (com 4 jogadores conectados) e todos teleportam para `minigame_quiz.tscn` (esqueleto).
-- Colisão player-player resolvida.
-- Pausa local e quit do jogo funcionando para host e para non-host. Conexões ENet são liberadas no quit.
+- Fase 1 do Item 5 ao vivo: host aperta E na cafeteria → todos os 4 teleportam para `minigame_quiz.tscn`.
+- Fase 2 do Item 5 ao vivo:
+  - `prototype/data/minigame_quiz.json` criado com `document_title`, `document_text` e 5 perguntas iniciais sobre comandos de Linux.
+  - `MinigameAssignPkt` (Layer-2, enum=20) com campos `target_id`, `team`, `role`, `partner_id`, `member_ids`.
+  - Sinal `host_minigame_assign_signal` no `PlayerHostPacketHandler` e dispatch no `host_packet_handler`.
+  - `minigame_quiz.tscn` reformulada com `DocumentPanel` (título + `RichTextLabel`), `QuizPanel` (pergunta + LineEdit + Submit), `TeamHUD` (timer, progresso, score, info da dupla) e nó controlador `MinigameSession`.
+  - `scripts/world_scripts/minigame_session.gd`:
+    - Host: carrega o JSON, ordena `spawned_ids`, calcula partição (A: ids[0]+ids[1]; B: ids[2]+ids[3]) e papéis (DOC para pares, QUIZ para ímpares), aplica a si mesmo e **broadcasta** um `MinigameAssignPkt` por player.
+    - Player: ao entrar na cena, consome o pacote bufferizado em `ClientPacketHandler.pending_minigame_assign` ou conecta no sinal `ClientPacketHandler.minigame_assigned` se ainda não chegou.
+- **Bug corrigido na Fase 2:** o broadcast do assign chegava no player antes do `change_scene_to_file` (deferido) montar a cena, então o sinal direto do `PlayerHostPacketHandler` se perdia. Bufferizamos no `ClientPacketHandler` (autoload sempre vivo). Limpeza adicionada também no `QUIT_ROOM`.
+- Fase 4 do Item 5 ao vivo (fora de ordem, feita junto da Fase 2 para validar a partição de times no chat):
+  - `ChatTextClass` ganhou campo `sender_team: u8` (255 = sem time, 0/1 = dupla A/B). Encode/decode atualizados.
+  - `ClientPacketHandler.minigame_team` e `minigame_team_members` populados por `MinigameSession._apply_assignment` e zerados no `QUIT_ROOM`.
+  - `chat.gd` aplica filtro **no receptor** (mensagens fora-do-time são descartadas em `player_text`/`host_text`) — escolha pragmática porque a Layer-2 do host não mantém map peer→player_id; o broadcast vai pra todos mas só os do mesmo time exibem.
+  - Nomes coloridos por BBCode: dupla A = azul (`#3a8dff`), dupla B = vermelho (`#ff5a5a`). `chat.tscn` ganhou `bbcode_enabled=true` + `scroll_following=true` no `RichTextLabel`.
 
-**Próximas decisões a tomar na Fase 2:**
+**Próximas decisões a tomar na Fase 3:**
 
-- Confirmar formato do `minigame_quiz.json` (já especificado em 7.2 mas não criado).
-- Decidir layout final de `DocumentPanel` vs `QuizPanel` na cena `minigame_quiz.tscn` (hoje só tem o esqueleto Control + título).
-- Implementar `MinigameAssignPkt` e a lógica de atribuição determinística (sort de `spawned_ids`).
-- Definir como o cliente reage ao receber o `MinigameAssignPkt` (mostrar painel correto, esconder o outro, cronômetro local).
-
-**Próximo passo:** este documento alimenta o plano de implementação detalhado (skill `writing-plans`), que quebrará cada item em commits/PRs verificáveis.
+- Criar `MinigameAnswerPkt` (player → host: `question_idx`, `answer`).
+- Criar `MinigameProgressPkt` (host → players do time: `team`, `question_idx`, `was_correct`, totais).
+- Criar `MinigameFinishedPkt` (host → broadcast: `team`, `elapsed_ms`).
+- Implementar `MinigameSession._validate_answer` no host (`normalize` + igualdade).
+- Habilitar `LineEdit`/`SubmitButton` no painel QUIZ e enviar `MinigameAnswerPkt` no submit.
+- Atualizar `ProgressLabel` e `ScoreLabel` na recepção de `MinigameProgressPkt` (somente do próprio time).
+- DOC: refletir o índice da pergunta atual (a Fase 2 mostra só o documento estático; pode ser interessante destacar qual pergunta a dupla está respondendo agora).

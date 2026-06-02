@@ -10,6 +10,7 @@ signal host_movement_signal(data: PackedByteArray)
 signal host_text_signal(data: PackedByteArray)
 signal host_change_scene_signal(data: PackedByteArray)
 signal host_force_scene_signal(data: PackedByteArray)
+signal host_minigame_assign_signal(data: PackedByteArray)
 
 var is_host: bool
 
@@ -41,4 +42,5 @@ func host_packet_handler(data: PackedByteArray) -> void:
 			host_change_scene_signal.emit(data)
 		InGameTypeClass.PACKET_TYPE.SCENE_FORCE_PACKET:
 			host_force_scene_signal.emit(data)
-	
+		InGameTypeClass.PACKET_TYPE.MINIGAME_ASSIGN:
+			host_minigame_assign_signal.emit(data)

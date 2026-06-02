@@ -6,6 +6,7 @@ signal join_room(room_id: int)
 signal quit_room()
 signal spawn_player_signal(player_id: int)
 signal player_scene_changed(player_id: int, scene_path: String)
+signal minigame_assigned(packet: MinigameAssignPkt)
 
 var my_ip: String
 var room_port: int
@@ -15,12 +16,22 @@ var temporary_player_name: String = "player"
 var current_room_id: int
 var spawned_ids: Array[int]
 var players_scenes: Dictionary[int, String] = {}
+# MinigameAssignPkt chega no broadcast logo após o SceneForcePacket, mas
+# change_scene_to_file é diferido — quando o pacote chega, a cena nova ainda
+# não está montada. Bufferizamos aqui (autoload) para o MinigameSession
+# consumir no seu _ready().
+var pending_minigame_assign: MinigameAssignPkt = null
+# -1 enquanto fora do minigame. Quando setado, o chat filtra mensagens fora-do-time
+# e colore os nomes por dupla.
+var minigame_team: int = -1
+var minigame_team_members: Array[int] = []
 
 func _ready() -> void:
 	ProtNetworkHandler.from_server_packet.connect(packet_handler)
 	PlayerHostPacketHandler.host_change_scene_signal.connect(on_scene_sync_received)
 	PlayerHostPacketHandler.player_change_scene_signal.connect(on_player_scene_received)
 	PlayerHostPacketHandler.host_force_scene_signal.connect(on_force_scene_received)
+	PlayerHostPacketHandler.host_minigame_assign_signal.connect(on_minigame_assign_received)
 
 func packet_handler(data: PackedByteArray) -> void:
 	var packet_type: int = int(data.decode_u8(0))
@@ -38,6 +49,9 @@ func packet_handler(data: PackedByteArray) -> void:
 			GamePacketHandler.cleanup_connection()
 			spawned_ids.clear()
 			players_scenes.clear()
+			pending_minigame_assign = null
+			minigame_team = -1
+			minigame_team_members.clear()
 			quit_room.emit()
 		PacketTypeClass.PACKET_TYPE.REFRESH:
 			var refresh: RefreshClass = RefreshClass.create_from_data(data)
@@ -123,3 +137,10 @@ func on_player_scene_received(_peer: ENetPacketPeer, data: PackedByteArray) -> v
 func on_force_scene_received(data: PackedByteArray) -> void:
 	var packet: SceneForcePacket = SceneForcePacket.create_from_data(data)
 	GameManager.goto_scene(packet.scene_path)
+
+func on_minigame_assign_received(data: PackedByteArray) -> void:
+	var packet: MinigameAssignPkt = MinigameAssignPkt.create_from_data(data)
+	if packet.target_id != my_id:
+		return
+	pending_minigame_assign = packet
+	minigame_assigned.emit(packet)
