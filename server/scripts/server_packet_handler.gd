@@ -8,6 +8,10 @@ var rooms: Dictionary[int, RoomStorage]
 # received_at: int (Time.get_ticks_msec) } }. Consumido pela UI do professor
 # (passo futuro).
 var minigame_submissions: Dictionary[int, Dictionary] = {}
+# Peer do professor (so um por enquanto). Se null, ninguem esta logado como
+# professor; submissoes ficam armazenadas em minigame_submissions e sao
+# despachadas assim que um PROFESSOR_HELLO chegar.
+var professor_peer: ENetPacketPeer = null
 
 func _ready() -> void:
 	ProtNetworkHandler.from_client_packet.connect(client_packet_handler)
@@ -37,6 +41,8 @@ func client_packet_handler(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 			save_room_info(peer, data)
 		PacketTypeClass.PACKET_TYPE.MINIGAME_SUBMISSION:
 			save_minigame_submission(peer, data)
+		PacketTypeClass.PACKET_TYPE.PROFESSOR_HELLO:
+			register_professor(peer)
 
 func save_room_info(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 	var room_packet: RoomInfoClass = RoomInfoClass.create_from_data(data)
@@ -63,6 +69,21 @@ func save_minigame_submission(peer: ENetPacketPeer, data: PackedByteArray) -> vo
 		"received_at": Time.get_ticks_msec()
 	}
 	print("(Server handler) minigame submission room=", room_id, " teams=", packet.teams)
+	# Encaminha pro professor (se conectado). Reaproveita o mesmo pacote.
+	if professor_peer != null:
+		if professor_peer.get_state() == ENetPacketPeer.STATE_CONNECTED:
+			MinigameSubmissionPkt.create(room_id, packet.teams).send(professor_peer)
+		else:
+			professor_peer = null
+
+func register_professor(peer: ENetPacketPeer) -> void:
+	professor_peer = peer
+	peer.set_meta("is_professor", true)
+	print("(Server handler) professor conectado")
+	# Despacha submissoes ja recebidas para que o prof comece a corrigir.
+	for room_id in minigame_submissions.keys():
+		var entry: Dictionary = minigame_submissions[room_id]
+		MinigameSubmissionPkt.create(room_id, entry["teams"]).send(peer)
 
 func send_refresh(peer: ENetPacketPeer) -> void:
 	RefreshClass.create(rooms, created_rooms_id).send(peer)
