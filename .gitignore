@@ -21,6 +21,12 @@ CLAUDE.md
 docs/
 docs/superpowers/specs/2026-05-19-future-work-design.md
 
+# Copias sincronizadas dos pacotes nos projetos.
+# Fonte canonica: shared/packets/. Gerar com sync_packets.ps1.
+/server/scripts/packets/
+/professor/scripts/packets/
+/client/prototype/scripts/packets/
+
 # Arquivos de editor local
 *.tmp
 *.bak
