@@ -3,6 +3,11 @@ extends Node
 var num_room: Array = range(255, -1, -1)
 var created_rooms_id: Array[int]
 var rooms: Dictionary[int, RoomStorage]
+# Respostas do minigame por sala, recebidas do host quando as 2 duplas
+# concluem. Estrutura: { room_id: { teams: Array (mesma forma do pacote),
+# received_at: int (Time.get_ticks_msec) } }. Consumido pela UI do professor
+# (passo futuro).
+var minigame_submissions: Dictionary[int, Dictionary] = {}
 
 func _ready() -> void:
 	ProtNetworkHandler.from_client_packet.connect(client_packet_handler)
@@ -30,6 +35,8 @@ func client_packet_handler(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 			send_refresh(peer)
 		PacketTypeClass.PACKET_TYPE.ROOM_INFO:
 			save_room_info(peer, data)
+		PacketTypeClass.PACKET_TYPE.MINIGAME_SUBMISSION:
+			save_minigame_submission(peer, data)
 
 func save_room_info(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 	var room_packet: RoomInfoClass = RoomInfoClass.create_from_data(data)
@@ -43,6 +50,19 @@ func save_room_info(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 	rooms[room_id] = new_room
 	peer.set_meta("in_room", true)
 	print("(Server handler) info saved: ", rooms)
+
+func save_minigame_submission(peer: ENetPacketPeer, data: PackedByteArray) -> void:
+	var packet: MinigameSubmissionPkt = MinigameSubmissionPkt.create_from_data(data)
+	var room_id: int = packet.room_id
+	# Só aceita do host da sala (impede client malicioso de injetar).
+	if not rooms.has(room_id) or rooms[room_id].host_peer != peer:
+		print("(Server handler) submission ignorada — peer não é host da sala ", room_id)
+		return
+	minigame_submissions[room_id] = {
+		"teams": packet.teams,
+		"received_at": Time.get_ticks_msec()
+	}
+	print("(Server handler) minigame submission room=", room_id, " teams=", packet.teams)
 
 func send_refresh(peer: ENetPacketPeer) -> void:
 	RefreshClass.create(rooms, created_rooms_id).send(peer)

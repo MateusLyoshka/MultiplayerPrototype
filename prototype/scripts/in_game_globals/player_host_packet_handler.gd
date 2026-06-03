@@ -4,6 +4,7 @@ extends Node
 signal player_movement_signal(data: PackedByteArray)
 signal player_text_signal(data: PackedByteArray)
 signal player_change_scene_signal(peer: ENetPacketPeer, data: PackedByteArray)
+signal player_minigame_answer_signal(data: PackedByteArray)
 
 # host signal
 signal host_movement_signal(data: PackedByteArray)
@@ -11,6 +12,7 @@ signal host_text_signal(data: PackedByteArray)
 signal host_change_scene_signal(data: PackedByteArray)
 signal host_force_scene_signal(data: PackedByteArray)
 signal host_minigame_assign_signal(data: PackedByteArray)
+signal host_minigame_progress_signal(data: PackedByteArray)
 
 var is_host: bool
 
@@ -30,6 +32,8 @@ func player_packet_handler(_peer: ENetPacketPeer, data: PackedByteArray) -> void
 			player_text_signal.emit(data)
 		InGameTypeClass.PACKET_TYPE.SCENE_SYNC_PACKET:
 			player_change_scene_signal.emit(_peer, data)
+		InGameTypeClass.PACKET_TYPE.MINIGAME_ANSWER:
+			player_minigame_answer_signal.emit(data)
 
 func host_packet_handler(data: PackedByteArray) -> void:
 	var packet_type = data.decode_u8(0)
@@ -44,3 +48,5 @@ func host_packet_handler(data: PackedByteArray) -> void:
 			host_force_scene_signal.emit(data)
 		InGameTypeClass.PACKET_TYPE.MINIGAME_ASSIGN:
 			host_minigame_assign_signal.emit(data)
+		InGameTypeClass.PACKET_TYPE.MINIGAME_PROGRESS:
+			host_minigame_progress_signal.emit(data)

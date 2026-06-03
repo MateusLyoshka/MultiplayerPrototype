@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://dxaa1eoj6frw5"]
+[gd_scene load_steps=4 format=3 uid="uid://dxaa1eoj6frw5"]
 
 [ext_resource type="PackedScene" uid="uid://dnnk20ejw87e6" path="res://prototype/scenes/in_game_reusables/pause_control.tscn" id="1_pause"]
 [ext_resource type="Script" path="res://prototype/scripts/world_scripts/minigame_session.gd" id="2_session"]
+[ext_resource type="PackedScene" uid="uid://nos1s3ei7bbe" path="res://prototype/scenes/in_game_reusables/chat.tscn" id="3_chat"]
 
 [node name="MinigameQuiz" type="Control" unique_id=920000001]
 layout_mode = 3
@@ -128,6 +129,8 @@ text = "Dupla: -"
 
 [node name="MinigameSession" type="Node" parent="." unique_id=920000050]
 script = ExtResource("2_session")
+
+[node name="Chat" parent="." instance=ExtResource("3_chat")]
 
 [node name="PauseLayer" type="CanvasLayer" parent="."]
 process_mode = 3
