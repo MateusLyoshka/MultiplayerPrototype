@@ -8,7 +8,9 @@ static func create(rooms_data: Dictionary, rooms_id: Array[int]) -> RefreshClass
 	for room_id in rooms_id:
 		if not rooms_data.has(room_id):
 			continue
-		var room: RoomStorage = rooms_data[room_id]
+		# Untyped: RoomStorage existe so no projeto server/.
+		# Este create() so e chamado pelo server; client e professor usam create_from_data.
+		var room = rooms_data[room_id]
 		var summary: RoomSummary = RoomSummary.new()
 		summary.id = room_id
 		summary.player_count = room.current_players.size()
