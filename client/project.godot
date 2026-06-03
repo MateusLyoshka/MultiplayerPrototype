@@ -14,7 +14,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 [application]
 
-config/name="LowLevel"
+config/name="Cyber Resistance - Client"
 run/main_scene="uid://behkmrjp0si6m"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
@@ -22,7 +22,6 @@ config/icon="res://icon.svg"
 [autoload]
 
 ProtNetworkHandler="*res://prototype/scripts/network_handler.gd"
-ServerPacketHandler="*res://prototype/scripts/server_packet_handler.gd"
 ClientPacketHandler="*res://prototype/scripts/client_packet_handler.gd"
 GamePacketHandler="*res://prototype/scripts/in_game_globals/game_packet_handler.gd"
 PlayerHostPacketHandler="*uid://cpcofqonikavq"

@@ -1,34 +1,18 @@
 extends Node
 
-# Server signals
 signal from_server_packet(data: PackedByteArray)
-
-# Client signals
-signal from_client_packet(peer: ENetPacketPeer, data: PackedByteArray)
 signal on_peer_connected
 signal on_connection_error
 
-# Client Server variables
 var server_connection: ENetConnection
-
-# Server variables
-var is_server: bool
-var avaliable_peer_ids: Array = range(255, -1, -1)
-var peers_connected: Dictionary[int, ENetPacketPeer]
-
-# Client variables
 var server_peer: ENetPacketPeer
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	var args = OS.get_cmdline_args()
-
-	if "--server" in args:
-		print("Initializing dedicated server")
-		start_server()
 
 func _process(_delta: float) -> void:
-	if server_connection == null: return
+	if server_connection == null:
+		return
 	handle_events()
 
 func handle_events() -> void:
@@ -40,54 +24,16 @@ func handle_events() -> void:
 			ENetConnection.EVENT_ERROR:
 				print("Packet received error")
 			ENetConnection.EVENT_CONNECT:
-				if is_server:
-					peer_connected(peer_sender)
-					#Debug timeout
-					peer_sender.set_timeout(0, 3600000, 3600000)
-				else:
-					client_connection()
-					#Debug timeout
-					peer_sender.set_timeout(0, 3600000, 3600000)
+				client_connection()
+				# Debug timeout — mesmo valor de antes para testes longos.
+				peer_sender.set_timeout(0, 3600000, 3600000)
 			ENetConnection.EVENT_DISCONNECT:
-				if is_server:
-					peer_disconnected(peer_sender)
-				else:
-					client_disconnection()
-					return
+				client_disconnection()
+				return
 			ENetConnection.EVENT_RECEIVE:
-				if is_server:
-					#print("Packet received")
-					from_client_packet.emit(peer_sender, peer_sender.get_packet())
-				else:
-					from_server_packet.emit(peer_sender.get_packet())
-					
+				from_server_packet.emit(peer_sender.get_packet())
 		packet_event = server_connection.service()
 		event_type = packet_event[0]
-
-func start_server(ip_address: String = "192.168.56.1", port: int = 42069) -> void:
-	server_connection = ENetConnection.new()
-	var error: Error = server_connection.create_host_bound(ip_address, port)
-	if error != OK:
-		printerr("ERRO FATAL AO CRIAR HOST: ", error)
-		server_connection = null
-		return
-	else:
-		print("Server started!")
-		is_server = true
-
-func peer_connected(peer: ENetPacketPeer) -> void:
-	var peer_id: int = avaliable_peer_ids.pop_back()
-	peer.set_meta("id", peer_id)
-	peers_connected[peer_id] = peer
-	PeerId.create(peer_id).send(peer)
-	ServerPacketHandler.send_refresh(peer)
-	print("(Server network) Peer: ", peer_id, " successfully connected")
-
-func peer_disconnected(peer: ENetPacketPeer) -> void:
-	var peer_id: int = peer.get_meta("id")
-	avaliable_peer_ids.push_back(peer_id)
-	peers_connected.erase(peer_id)
-	print("Peer: ", peer_id, " successfully disconnected")
 
 func start_client(ip_address: String, port: int) -> void:
 	server_connection = ENetConnection.new()
@@ -96,19 +42,16 @@ func start_client(ip_address: String, port: int) -> void:
 		print("Host creation erro: ", error)
 		return
 	server_peer = server_connection.connect_to_host(ip_address, port)
-	#server_peer.set_timeout(0, 3000, 5000)
 
 func client_connection() -> void:
 	on_peer_connected.emit()
-	#print("Peer connected (peer side)")
-	return
 
 func client_disconnection() -> void:
 	if server_peer.get_state() == ENetPacketPeer.STATE_DISCONNECTED:
 		print("Connection timeout")
 		server_peer = null
 		server_connection = null
-		get_tree().change_scene_to_file("res://prototype/scenes/mainMenu.tscn")
+		get_tree().change_scene_to_file("res://prototype/scenes/menu/mainMenu.tscn")
 		on_connection_error.emit()
 	else:
 		print("Connection timeout with server state: ", server_peer.get_state())
