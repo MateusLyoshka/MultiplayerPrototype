@@ -27,6 +27,11 @@ docs/superpowers/specs/2026-05-19-future-work-design.md
 /professor/scripts/packets/
 /client/prototype/scripts/packets/
 
+# Copias sincronizadas do quiz nos projetos do client e do professor.
+# Fonte canonica: shared/data/. Gerar com sync_packets.ps1.
+/client/prototype/data/minigame_quiz.json
+/professor/data/minigame_quiz.json
+
 # Arquivos de editor local
 *.tmp
 *.bak

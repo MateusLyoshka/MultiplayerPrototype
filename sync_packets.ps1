@@ -18,35 +18,59 @@
 
 $ErrorActionPreference = "Stop"
 $repoRoot = $PSScriptRoot
-$source = Join-Path $repoRoot "shared\packets"
 
-if (-not (Test-Path $source)) {
-    Write-Host "ERRO: $source nao existe." -ForegroundColor Red
-    exit 1
-}
-
-$targets = @(
-    @{ Name = "server";    Path = "server\scripts\packets" },
-    @{ Name = "professor"; Path = "professor\scripts\packets" },
-    @{ Name = "client";    Path = "client\prototype\scripts\packets" }
+# Cada item: Source (subpasta de shared/), e os targets onde a copia deve ir.
+# Source skipada se nao existir; target skipado se a raiz do projeto nao existe.
+$syncs = @(
+    @{
+        Source  = "shared\packets"
+        Targets = @(
+            @{ Name = "server";    Path = "server\scripts\packets" },
+            @{ Name = "professor"; Path = "professor\scripts\packets" },
+            @{ Name = "client";    Path = "client\prototype\scripts\packets" }
+        )
+    },
+    @{
+        Source  = "shared\data"
+        Targets = @(
+            @{ Name = "professor"; Path = "professor\data" },
+            @{ Name = "client";    Path = "client\prototype\data" }
+        )
+    }
 )
 
-foreach ($target in $targets) {
-    $fullTarget = Join-Path $repoRoot $target.Path
-    $projectRoot = Split-Path -Path (Split-Path -Path $fullTarget -Parent) -Parent
+function Get-ProjectRoot([string]$fullTarget) {
+    # client/prototype/scripts/packets -> client/prototype (3 levels up para
+    # quem tem prototype/, 2 para quem nao tem). Heuristica: procura pela
+    # primeira pasta acima que contenha project.godot.
+    $cur = Split-Path -Path $fullTarget -Parent
+    while ($null -ne $cur -and $cur.Length -gt $repoRoot.Length) {
+        if (Test-Path (Join-Path $cur "project.godot")) { return $cur }
+        $cur = Split-Path -Path $cur -Parent
+    }
+    return $null
+}
 
-    if (-not (Test-Path $projectRoot)) {
-        Write-Host "  [skip] $($target.Name): projeto ainda nao existe ($projectRoot)" -ForegroundColor Yellow
+foreach ($sync in $syncs) {
+    $source = Join-Path $repoRoot $sync.Source
+    if (-not (Test-Path $source)) {
+        Write-Host "  [skip src] $($sync.Source) nao existe" -ForegroundColor Yellow
         continue
     }
-
-    if (-not (Test-Path $fullTarget)) {
-        New-Item -ItemType Directory -Force -Path $fullTarget | Out-Null
+    foreach ($target in $sync.Targets) {
+        $fullTarget = Join-Path $repoRoot $target.Path
+        $projectRoot = Get-ProjectRoot $fullTarget
+        if ($null -eq $projectRoot) {
+            Write-Host "  [skip]   $($target.Name) ($($sync.Source)): project.godot nao encontrado em $($target.Path)" -ForegroundColor Yellow
+            continue
+        }
+        if (-not (Test-Path $fullTarget)) {
+            New-Item -ItemType Directory -Force -Path $fullTarget | Out-Null
+        }
+        Copy-Item -Path "$source\*" -Destination $fullTarget -Recurse -Force
+        Write-Host "  [ok]     $($target.Name) ($($sync.Source)) -> $($target.Path)" -ForegroundColor Green
     }
-
-    Copy-Item -Path "$source\*" -Destination $fullTarget -Recurse -Force
-    Write-Host "  [ok]   $($target.Name) -> $($target.Path)" -ForegroundColor Green
 }
 
 Write-Host ""
-Write-Host "sync_packets concluido." -ForegroundColor Cyan
+Write-Host "sync concluido." -ForegroundColor Cyan

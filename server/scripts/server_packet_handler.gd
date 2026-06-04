@@ -114,7 +114,7 @@ func join_request(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 	if (!created_rooms_id.has(room)):
 		print("This room does not exist anymore, please refresh the page!")
 		return
-	if (rooms[room].current_players.size() > 4):
+	if (rooms[room].current_players.size() >= 4):
 		print("The room is full!")
 		return
 	rooms[room].add_player(peer)
