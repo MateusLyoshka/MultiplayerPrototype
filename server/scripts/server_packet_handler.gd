@@ -43,6 +43,8 @@ func client_packet_handler(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 			save_minigame_submission(peer, data)
 		PacketTypeClass.PACKET_TYPE.PROFESSOR_HELLO:
 			register_professor(peer)
+		PacketTypeClass.PACKET_TYPE.MINIGAME_GRADE:
+			route_grade(peer, data)
 
 func save_room_info(peer: ENetPacketPeer, data: PackedByteArray) -> void:
 	var room_packet: RoomInfoClass = RoomInfoClass.create_from_data(data)
@@ -75,6 +77,24 @@ func save_minigame_submission(peer: ENetPacketPeer, data: PackedByteArray) -> vo
 			MinigameSubmissionPkt.create(room_id, packet.teams).send(professor_peer)
 		else:
 			professor_peer = null
+
+func route_grade(peer: ENetPacketPeer, data: PackedByteArray) -> void:
+	# So aceita do peer registrado como professor.
+	if peer != professor_peer:
+		print("(Server handler) MINIGAME_GRADE ignorado - peer nao e o professor")
+		return
+	var pkt: MinigameGradePkt = MinigameGradePkt.create_from_data(data)
+	if not rooms.has(pkt.room_id):
+		print("(Server handler) MINIGAME_GRADE para sala inexistente ", pkt.room_id)
+		return
+	var host_peer: ENetPacketPeer = rooms[pkt.room_id].host_peer
+	if host_peer.get_state() != ENetPacketPeer.STATE_CONNECTED:
+		print("(Server handler) host da sala ", pkt.room_id, " nao esta conectado")
+		return
+	# Encaminha o pacote intacto ao host - ele decodifica e traduz em
+	# MinigameGradeResultPkt (in-game) para a dupla.
+	host_peer.send(0, data, ENetPacketPeer.FLAG_RELIABLE)
+	print("(Server handler) MINIGAME_GRADE encaminhado para host da sala ", pkt.room_id)
 
 func register_professor(peer: ENetPacketPeer) -> void:
 	professor_peer = peer

@@ -7,6 +7,9 @@ signal quit_room()
 signal spawn_player_signal(player_id: int)
 signal player_scene_changed(player_id: int, scene_path: String)
 signal minigame_assigned(packet: MinigameAssignPkt)
+# Emitido APENAS no host (loopback local) quando o grade chega via lobby.
+# Players nao-host recebem direto via PlayerHostPacketHandler.host_minigame_grade_signal.
+signal host_minigame_grade(team_index: int, grade: float, comment: String)
 
 var my_ip: String
 var room_port: int
@@ -62,6 +65,14 @@ func packet_handler(data: PackedByteArray) -> void:
 		PacketTypeClass.PACKET_TYPE.HAS_QUITTED:
 			var has_quited: HasQuittedPkt = HasQuittedPkt.create_from_data(data)
 			sync_spawns(has_quited.remote_ids)
+		PacketTypeClass.PACKET_TYPE.MINIGAME_GRADE:
+			# So o host recebe isso. Traduz em pacote in-game e broadcast.
+			if not GamePacketHandler.is_host:
+				return
+			var grade_pkt: MinigameGradePkt = MinigameGradePkt.create_from_data(data)
+			MinigameGradeResultPkt.create(grade_pkt.team_index, grade_pkt.grade, grade_pkt.comment).broadcast(GamePacketHandler.host_connection)
+			# Broadcast nao volta ao remetente; se o host pertence a dupla, aplica local.
+			host_minigame_grade.emit(grade_pkt.team_index, grade_pkt.grade, grade_pkt.comment)
 
 func join_manager(data: PackedByteArray) -> void:
 	var join_packet: JoinRoomClass = JoinRoomClass.create_from_data(data)

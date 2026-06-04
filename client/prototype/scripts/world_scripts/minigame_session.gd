@@ -38,6 +38,8 @@ var my_finished: bool = false
 var host_team_state: Array = []
 
 var start_msec: int = 0
+var my_grade: float = -1.0
+var my_grade_comment: String = ""
 
 func _ready() -> void:
 	if not _load_quiz():
@@ -48,9 +50,13 @@ func _ready() -> void:
 	answer_line.text_submitted.connect(_on_answer_text_submitted)
 	# Progress chega para todos via broadcast do host; filtro por time no handler.
 	PlayerHostPacketHandler.host_minigame_progress_signal.connect(_on_progress_received)
+	# Nota: chega via in-game broadcast nos players; o host receberia o lobby
+	# loopback porque o seu proprio broadcast nao volta.
+	PlayerHostPacketHandler.host_minigame_grade_signal.connect(_on_grade_received)
 
 	if GamePacketHandler.is_host:
 		PlayerHostPacketHandler.player_minigame_answer_signal.connect(_on_player_answer_received)
+		ClientPacketHandler.host_minigame_grade.connect(_on_grade_loopback)
 		# Conhece os ids da partida e calcula tudo localmente; não fica esperando
 		# seu próprio pacote pelo loopback (broadcast não volta ao remetente).
 		_host_assign_and_dispatch()
@@ -181,7 +187,29 @@ func _show_finished_state() -> void:
 	quiz_panel.visible = false
 	document_panel.visible = false
 	waiting_label.visible = true
-	waiting_label.text = "Respostas enviadas. Aguarde o professor dar nota."
+	if my_grade >= 0.0:
+		var txt: String = "Nota da dupla: %.1f/10" % my_grade
+		if not my_grade_comment.is_empty():
+			txt += "\n\nComentario do professor:\n" + my_grade_comment
+		waiting_label.text = txt
+	else:
+		waiting_label.text = "Respostas enviadas. Aguarde o professor dar nota."
+
+func _on_grade_received(data: PackedByteArray) -> void:
+	var pkt: MinigameGradeResultPkt = MinigameGradeResultPkt.create_from_data(data)
+	_apply_grade(pkt.team_index, pkt.grade, pkt.comment)
+
+func _on_grade_loopback(team_index: int, grade: float, comment: String) -> void:
+	_apply_grade(team_index, grade, comment)
+
+func _apply_grade(team_index: int, grade: float, comment: String) -> void:
+	if team_index != my_team:
+		return
+	# Idempotente: aplicar de novo so atualiza o texto.
+	my_grade = grade
+	my_grade_comment = comment
+	if my_finished:
+		_show_finished_state()
 
 func _on_answer_text_submitted(_text: String) -> void:
 	_on_submit_pressed()
