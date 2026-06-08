@@ -35,7 +35,7 @@ func handle_events() -> void:
 		packet_event = server_connection.service()
 		event_type = packet_event[0]
 
-func start_server(ip_address: String = "192.168.56.1", port: int = 42069) -> void:
+func start_server(ip_address: String = "192.168.1.33", port: int = 42069) -> void:
 	server_connection = ENetConnection.new()
 	var error: Error = server_connection.create_host_bound(ip_address, port)
 	if error != OK:

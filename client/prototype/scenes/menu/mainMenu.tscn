@@ -56,7 +56,7 @@ alignment = 1
 
 [node name="LineEdit" type="LineEdit" parent="Panel/MarginContainer/HBoxContainer/VBoxContainer" unique_id=1110179398]
 layout_mode = 2
-text = "192.168.56.1"
+text = "192.168.18.14"
 placeholder_text = "Server IPv4"
 
 [node name="Seperator2" type="Control" parent="Panel/MarginContainer/HBoxContainer/VBoxContainer" unique_id=278828528]

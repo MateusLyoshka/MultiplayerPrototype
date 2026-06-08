@@ -1,3 +1,3 @@
-[gd_scene format=3 uid="uid://b0server000001"]
+[gd_scene format=3 uid="uid://btap1jy8jyvnk"]
 
-[node name="ServerMain" type="Node"]
+[node name="ServerMain" type="Node" unique_id=62437603]

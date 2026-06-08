@@ -105,7 +105,7 @@ func _build_team_section(room_id: int, team_index: int, team: Dictionary) -> VBo
 	var grade_spin: SpinBox = SpinBox.new()
 	grade_spin.min_value = 0
 	grade_spin.max_value = 10
-	grade_spin.step = 0.1
+	grade_spin.step = 0.5
 	grade_spin.value = 0
 	grade_spin.custom_minimum_size = Vector2(90, 0)
 	form.add_child(grade_spin)

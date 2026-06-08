@@ -1,8 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://b0professor00001"]
+[gd_scene format=3 uid="uid://bgt0o005o2tca"]
 
-[ext_resource type="Script" path="res://scripts/professor_ui.gd" id="1_ui"]
+[ext_resource type="Script" uid="uid://cponvvrlklsv7" path="res://scripts/professor_ui.gd" id="1_ui"]
 
-[node name="ProfessorMain" type="Control"]
+[node name="ProfessorMain" type="Control" unique_id=593857675]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,50 +11,50 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_ui")
 
-[node name="VBox" type="VBoxContainer" parent="."]
+[node name="VBox" type="VBoxContainer" parent="." unique_id=831892537]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
 offset_left = 16.0
 offset_top = 16.0
 offset_right = -16.0
 offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="TitleLabel" type="Label" parent="VBox"]
+[node name="TitleLabel" type="Label" parent="VBox" unique_id=635559499]
 layout_mode = 2
 text = "Cyber Resistance — Painel do Professor"
 
-[node name="ConnectRow" type="HBoxContainer" parent="VBox"]
+[node name="ConnectRow" type="HBoxContainer" parent="VBox" unique_id=1751517353]
 layout_mode = 2
 
-[node name="IpHintLabel" type="Label" parent="VBox/ConnectRow"]
+[node name="IpHintLabel" type="Label" parent="VBox/ConnectRow" unique_id=1788385507]
 layout_mode = 2
 text = "IP do server:"
 
-[node name="ServerIpLine" type="LineEdit" parent="VBox/ConnectRow"]
+[node name="ServerIpLine" type="LineEdit" parent="VBox/ConnectRow" unique_id=953274647]
 custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
 text = "192.168.56.1"
 
-[node name="ConnectButton" type="Button" parent="VBox/ConnectRow"]
+[node name="ConnectButton" type="Button" parent="VBox/ConnectRow" unique_id=407103644]
 layout_mode = 2
 text = "Conectar"
 
-[node name="StatusLabel" type="Label" parent="VBox"]
+[node name="StatusLabel" type="Label" parent="VBox" unique_id=1128217223]
 layout_mode = 2
 text = "Status: Desconectado"
 
-[node name="SummaryLabel" type="Label" parent="VBox"]
+[node name="SummaryLabel" type="Label" parent="VBox" unique_id=1407532704]
 layout_mode = 2
 text = "Aguardando submissoes..."
 
-[node name="ScrollContainer" type="ScrollContainer" parent="VBox"]
+[node name="ScrollContainer" type="ScrollContainer" parent="VBox" unique_id=67713130]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="SubmissionsVBox" type="VBoxContainer" parent="VBox/ScrollContainer"]
+[node name="SubmissionsVBox" type="VBoxContainer" parent="VBox/ScrollContainer" unique_id=1036682830]
 layout_mode = 2
 size_flags_horizontal = 3
