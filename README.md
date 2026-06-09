@@ -8,11 +8,82 @@ This document details the network architecture and custom protocol developed for
 
 The codebase is split into three independent Godot 4.6 projects sharing the lobby packet contracts via a sync script:
 
-* `server/` — dedicated lobby/relay server. Auto-starts on launch, binds to a hardcoded IP/port.
+* `server/` — dedicated lobby/relay server. On launch, an in-app UI prompts the operator for the IP and port to bind to.
 * `client/` — student-facing game (lobby + in-game). Multiple instances run as the 4 players of a session.
 * `professor/` — teacher-facing client. Registers itself with the server via `PROFESSOR_HELLO`, receives every `MINIGAME_SUBMISSION` (replayed on connect), and sends `MINIGAME_GRADE` back per team.
 * `shared/packets/` — canonical lobby packet sources; `sync_packets.ps1` mirrors them into each project's local `scripts/packets/`.
 * `shared/data/minigame_quiz.json` — canonical quiz content, synced into `client/` and `professor/`.
+
+---
+
+## Quickstart — running the prototype locally
+
+### Prerequisites
+
+* Godot **4.6** (Forward Plus).
+* All participating machines on the same LAN subnet. The prototype assumes a controlled local network — no internet / NAT traversal.
+* Firewall allowing UDP on the chosen server port (default `42069`) and on the ephemeral range used by room hosts.
+
+### Open the three projects
+
+Each subfolder is an independent Godot project. Import them in Godot's Project Manager:
+
+* `server/project.godot`
+* `client/project.godot`
+* `professor/project.godot`
+
+Tip: keep all three open in separate editor windows during development — it's the fastest iteration loop.
+
+### Sync the shared packet sources
+
+Before the first run, and any time `shared/packets/` or `shared/data/` changes, run the sync script from the repo root. Pick the one that fits your shell:
+
+**Windows (PowerShell):**
+
+```powershell
+.\sync_packets.ps1
+```
+
+**Linux / macOS (Bash):**
+
+```bash
+chmod +x sync_packets.sh    # first time only
+./sync_packets.sh
+```
+
+Both scripts do the same thing: copy `shared/packets/*.gd` into each project's local `scripts/packets/` (gitignored) and the quiz JSON into the `client/` and `professor/` data folders. Without this step the projects ship with stale contracts and packets silently decode wrong.
+
+### Start the server
+
+1. Open the `server` project in Godot, press F5.
+2. A small UI appears with IP and port fields. The IP is pre-filled with a guess of your LAN address (`192.168.x.y` / `10.x.y.z` / `172.x.y.z`). Edit if wrong, leave port `42069`.
+3. Click **Iniciar servidor**. The status label switches to `Status: rodando em X.X.X.X:42069`. Leave this window open while the session runs.
+
+### Start the professor client
+
+1. Open the `professor` project in Godot, press F5.
+2. The connect screen appears. Type the server's IP (same one shown in the server window), click **Conectar**.
+3. The status updates to `Conectado`. The professor is now registered and will receive every submission as students finish.
+
+### Start the student clients
+
+A full session uses 4 students. Two ways:
+
+* **Single machine (smoke test / development):** Open the `client` project. **Debug → Run Multiple Instances → 4**. Press F5. Four windows open; in each, type the server IP and connect.
+* **Multiple machines (realistic deployment):** Install Godot 4.6 on each machine, import `client/project.godot`, press F5, type the server IP, connect. Repeat on every student machine.
+
+A complete end-to-end session therefore needs **6 simultaneous Godot windows**: 1 server, 1 professor, 4 clients (the "Run Multiple" count as one editor window with 4 instances).
+
+### Networking notes
+
+* The central server listens on the IP/port you typed in the UI, UDP only.
+* When a student creates a room, their client picks a random ephemeral UDP port and binds it; the server publishes the host's IP + port to joiners via `JOIN_ROOM`. Joiners then connect **directly** to that host port (Layer 2 ENet).
+* For multi-machine sessions every participant must be on the same LAN, and each machine's firewall must allow:
+  * UDP `<server_port>` inbound on the server machine (default `42069`).
+  * The ephemeral UDP range inbound on whichever student machine is hosting a room.
+* On Linux, exported binaries need `chmod +x` before running. Godot 4.x official templates require an x86_64 CPU with **SSE 4.2** support; older CPUs (e.g. AMD Phenom II) will exit with `Illegal instruction (core dumped)`.
+
+There is no build, lint or test pipeline. Iteration is entirely through the Godot editor's play button.
 
 ---
 
