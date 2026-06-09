@@ -6,6 +6,7 @@ signal on_connection_error
 
 var server_connection: ENetConnection
 var server_peer: ENetPacketPeer
+var server_ip: String = ""
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -41,6 +42,7 @@ func start_client(ip_address: String, port: int) -> void:
 	if error:
 		print("Host creation erro: ", error)
 		return
+	server_ip = ip_address
 	server_peer = server_connection.connect_to_host(ip_address, port)
 
 func client_connection() -> void:

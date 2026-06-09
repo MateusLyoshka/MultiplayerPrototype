@@ -40,6 +40,25 @@ size_flags_vertical = 3
 layout_mode = 2
 size_flags_horizontal = 3
 
+[node name="IpRow" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="IpLabel" type="Label" parent="Panel/VBoxContainer/IpRow"]
+custom_minimum_size = Vector2(140, 0)
+layout_mode = 2
+text = "Meu IP (host):"
+
+[node name="IpLine" type="LineEdit" parent="Panel/VBoxContainer/IpRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "ex.: 192.168.0.10 (preencher antes de Nova sala)"
+
+[node name="StatusLabel" type="Label" parent="Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 4
+text = ""
+
 [node name="HBoxContainer" type="HBoxContainer" parent="Panel/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 4

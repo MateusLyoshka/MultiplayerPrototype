@@ -84,10 +84,11 @@ func join_manager(data: PackedByteArray) -> void:
 
 func start_room(data: PackedByteArray) -> void:
 	var room_packet: StartRoomClass = StartRoomClass.create_from_data(data)
-	
+
 	current_room_id = room_packet.room
 	created_room.emit(room_packet.room)
-	my_ip = get_ipv4()
+	if my_ip.is_empty():
+		my_ip = get_ipv4()
 	room_port = get_random_port()
 	
 	RoomInfoClass.create(ClientPacketHandler.my_id, current_room_id, room_port, my_ip, temporary_player_name).send(ProtNetworkHandler.server_peer)
@@ -104,12 +105,25 @@ func get_random_port() -> int:
 	return 0
 
 func get_ipv4() -> String:
-	var ip_list = IP.get_local_addresses()
+	var ip_list: Array = IP.get_local_addresses()
+	var candidates: Array = []
 	for ip in ip_list:
-		if ip.count(".") == 3:
-			if ip.begins_with("192.168.") or ip.begins_with("10.") or ip.begins_with("172."):
+		if ip.count(".") == 3 and (ip.begins_with("192.168.") or ip.begins_with("10.") or ip.begins_with("172.")):
+			candidates.append(ip)
+	var server_prefix: String = _ipv4_prefix(ProtNetworkHandler.server_ip)
+	if server_prefix != "":
+		for ip in candidates:
+			if _ipv4_prefix(ip) == server_prefix:
 				return ip
-	return "127.0.0.1"
+	if candidates.size() > 0:
+		return candidates[0]
+	return ""
+
+func _ipv4_prefix(ip: String) -> String:
+	var parts: PackedStringArray = ip.split(".")
+	if parts.size() != 4:
+		return ""
+	return "%s.%s.%s" % [parts[0], parts[1], parts[2]]
 
 func sync_spawns(others_id: Array[int]) -> void:
 	for spawned_id in spawned_ids.duplicate():
