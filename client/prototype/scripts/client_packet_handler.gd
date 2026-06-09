@@ -136,6 +136,8 @@ func on_scene_sync_received(data: PackedByteArray) -> void:
 	var packet: SceneSyncPacket = SceneSyncPacket.create_from_data(data)
 	if packet.peer_id == my_id:
 		return
+	if not spawned_ids.has(packet.peer_id):
+		return
 	players_scenes[packet.peer_id] = packet.scene_path
 	player_scene_changed.emit(packet.peer_id, packet.scene_path)
 

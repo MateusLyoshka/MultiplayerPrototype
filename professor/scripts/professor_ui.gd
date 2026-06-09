@@ -13,6 +13,9 @@ const QUIZ_JSON_PATH := "res://data/minigame_quiz.json"
 var graded: Dictionary[String, bool] = {}
 # (room_id) -> Node do card, para evitar duplicar se a mesma sala chegar de novo.
 var room_cards: Dictionary[int, Node] = {}
+var room_headers: Dictionary[int, Button] = {}
+var room_bodies: Dictionary[int, VBoxContainer] = {}
+var room_team_counts: Dictionary[int, int] = {}
 var quiz_questions: Array = []
 var submission_count: int = 0
 
@@ -60,26 +63,48 @@ func _update_summary() -> void:
 func _on_submission(room_id: int, teams: Array) -> void:
 	submission_count += 1
 	_update_summary()
-	# Se a sala ja tem card, recria (substitui) - util para reconexoes.
+	# Preserva o estado colapsado da sala quando o card e recriado.
+	var was_collapsed: bool = false
 	if room_cards.has(room_id):
+		if room_bodies.has(room_id):
+			was_collapsed = not room_bodies[room_id].visible
 		room_cards[room_id].queue_free()
 	var card: PanelContainer = _build_room_card(room_id, teams)
 	submissions_vbox.add_child(card)
 	room_cards[room_id] = card
+	if was_collapsed and room_bodies.has(room_id):
+		room_bodies[room_id].visible = false
+		_update_header_text(room_id)
 
 func _build_room_card(room_id: int, teams: Array) -> PanelContainer:
 	var card: PanelContainer = PanelContainer.new()
 	var card_vbox: VBoxContainer = VBoxContainer.new()
 	card.add_child(card_vbox)
-	var header: Label = Label.new()
-	header.text = "Sala %d" % room_id
+	var header: Button = Button.new()
 	header.add_theme_font_size_override("font_size", 20)
+	header.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	card_vbox.add_child(header)
+	var body: VBoxContainer = VBoxContainer.new()
+	card_vbox.add_child(body)
 	for i in teams.size():
-		card_vbox.add_child(_build_team_section(room_id, i, teams[i]))
+		body.add_child(_build_team_section(room_id, i, teams[i]))
 		if i + 1 < teams.size():
-			card_vbox.add_child(HSeparator.new())
+			body.add_child(HSeparator.new())
+	room_headers[room_id] = header
+	room_bodies[room_id] = body
+	room_team_counts[room_id] = teams.size()
+	header.pressed.connect(func() -> void:
+		body.visible = not body.visible
+		_update_header_text(room_id)
+	)
+	_update_header_text(room_id)
 	return card
+
+func _update_header_text(room_id: int) -> void:
+	if not room_headers.has(room_id) or not room_bodies.has(room_id):
+		return
+	var arrow: String = "v" if room_bodies[room_id].visible else ">"
+	room_headers[room_id].text = "Sala %d (%d duplas) %s" % [room_id, room_team_counts.get(room_id, 0), arrow]
 
 func _build_team_section(room_id: int, team_index: int, team: Dictionary) -> VBoxContainer:
 	var vbox: VBoxContainer = VBoxContainer.new()
@@ -105,8 +130,11 @@ func _build_team_section(room_id: int, team_index: int, team: Dictionary) -> VBo
 	var grade_spin: SpinBox = SpinBox.new()
 	grade_spin.min_value = 0
 	grade_spin.max_value = 10
-	grade_spin.step = 0.5
+	grade_spin.step = 1
 	grade_spin.value = 0
+	grade_spin.rounded = true
+	grade_spin.allow_greater = false
+	grade_spin.allow_lesser = false
 	grade_spin.custom_minimum_size = Vector2(90, 0)
 	form.add_child(grade_spin)
 	var comment_label: Label = Label.new()
@@ -126,7 +154,9 @@ func _build_team_section(room_id: int, team_index: int, team: Dictionary) -> VBo
 
 	var key: String = "%d-%d" % [room_id, team_index]
 	send_button.pressed.connect(func() -> void:
-		var pkt: MinigameGradePkt = MinigameGradePkt.create(room_id, team_index, float(grade_spin.value), comment_line.text)
+		var clamped: int = clampi(int(round(grade_spin.value)), 0, 10)
+		grade_spin.value = clamped
+		var pkt: MinigameGradePkt = MinigameGradePkt.create(room_id, team_index, float(clamped), comment_line.text)
 		pkt.send(ProtNetworkHandler.server_peer)
 		graded[key] = true
 		grade_spin.editable = false

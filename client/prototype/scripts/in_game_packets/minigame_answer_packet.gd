@@ -20,7 +20,7 @@ func encode() -> PackedByteArray:
 	var data: PackedByteArray = super.encode()
 	data.append(team)
 	data.append(question_idx)
-	var answer_data: PackedByteArray = answer.to_ascii_buffer()
+	var answer_data: PackedByteArray = answer.to_utf8_buffer()
 	data.append(answer_data.size())
 	data.append_array(answer_data)
 	return data
@@ -30,4 +30,4 @@ func decode(data: PackedByteArray) -> void:
 	team = data.decode_u8(1)
 	question_idx = data.decode_u8(2)
 	var answer_size: int = data.decode_u8(3)
-	answer = data.slice(4, 4 + answer_size).get_string_from_ascii()
+	answer = data.slice(4, 4 + answer_size).get_string_from_utf8()

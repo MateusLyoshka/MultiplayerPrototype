@@ -1,4 +1,7 @@
 extends Node
+class_name MinigameSession
+
+static var is_active: bool = false
 
 const QUIZ_JSON_PATH := "res://prototype/data/minigame_quiz.json"
 
@@ -42,6 +45,7 @@ var my_grade: float = -1.0
 var my_grade_comment: String = ""
 
 func _ready() -> void:
+	is_active = true
 	if not _load_quiz():
 		push_error("Minigame: falha ao carregar %s" % QUIZ_JSON_PATH)
 		return
@@ -69,6 +73,9 @@ func _ready() -> void:
 			_apply_assignment(p.team, p.role, p.partner_id, p.member_ids)
 		else:
 			ClientPacketHandler.minigame_assigned.connect(_on_assign_signal)
+
+func _exit_tree() -> void:
+	is_active = false
 
 func _process(_delta: float) -> void:
 	if not assigned or my_finished:

@@ -22,8 +22,8 @@ static func create_from_data(data: PackedByteArray) -> ChatTextClass:
 func encode() -> PackedByteArray:
 	var data: PackedByteArray = super.encode()
 	data.append(sender_team)
-	var sender_name_data: PackedByteArray = sender_name.to_ascii_buffer()
-	var text_data: PackedByteArray = text.to_ascii_buffer()
+	var sender_name_data: PackedByteArray = sender_name.to_utf8_buffer()
+	var text_data: PackedByteArray = text.to_utf8_buffer()
 	data.append(sender_name_data.size())
 	data.append_array(sender_name_data)
 	data.append_array(text_data)
@@ -33,5 +33,5 @@ func decode(data: PackedByteArray) -> void:
 	super.decode(data)
 	sender_team = data.decode_u8(1)
 	var sender_name_size: int = data.decode_u8(2)
-	sender_name = data.slice(3, 3 + sender_name_size).get_string_from_ascii()
-	text = data.slice(3 + sender_name_size).get_string_from_ascii()
+	sender_name = data.slice(3, 3 + sender_name_size).get_string_from_utf8()
+	text = data.slice(3 + sender_name_size).get_string_from_utf8()

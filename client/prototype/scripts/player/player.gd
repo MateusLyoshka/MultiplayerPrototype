@@ -47,6 +47,7 @@ func setup_player() -> void:
 func _physics_process(_delta: float) -> void:
 	if get_viewport().gui_get_focus_owner() is LineEdit:
 		return
+	if MinigameSession.is_active: return
 	if !is_authority: return
 	movement_direction = Input.get_vector("walk_left", "walk_right", "walk_up", "walk_down")
 	velocity = movement_direction * SPEED

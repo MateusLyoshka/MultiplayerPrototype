@@ -77,7 +77,7 @@ func player_connected(_peer: ENetPacketPeer) -> void:
 	print("(Game network) new player connected")
 	var current_scene_path: String = get_tree().current_scene.scene_file_path
 	if not current_scene_path.is_empty():
-		SceneSyncPacket.create(0, current_scene_path).send(_peer)
+		SceneSyncPacket.create(ClientPacketHandler.my_id, current_scene_path).send(_peer)
 
 func peer_disconnected(peer: ENetPacketPeer) -> void:
 	var player_id: int = peer.get_meta("id")

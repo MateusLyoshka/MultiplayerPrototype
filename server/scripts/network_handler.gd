@@ -8,8 +8,6 @@ var peers_connected: Dictionary[int, ENetPacketPeer]
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	# Este projeto so roda como server, sem flag --server.
-	start_server()
 
 func _process(_delta: float) -> void:
 	if server_connection == null:
@@ -35,14 +33,15 @@ func handle_events() -> void:
 		packet_event = server_connection.service()
 		event_type = packet_event[0]
 
-func start_server(ip_address: String = "192.168.1.33", port: int = 42069) -> void:
+func start_server(ip_address: String, port: int = 42069) -> bool:
 	server_connection = ENetConnection.new()
 	var error: Error = server_connection.create_host_bound(ip_address, port)
 	if error != OK:
 		printerr("ERRO FATAL AO CRIAR HOST: ", error)
 		server_connection = null
-		return
+		return false
 	print("Server started at ", ip_address, ":", port)
+	return true
 
 func peer_connected(peer: ENetPacketPeer) -> void:
 	var peer_id: int = avaliable_peer_ids.pop_back()
