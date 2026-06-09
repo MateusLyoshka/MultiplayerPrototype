@@ -4,6 +4,12 @@ extends CharacterBody2D
 @onready var camera: Camera2D = get_node_or_null("Camera2D")
 
 const SPEED: float = 300
+const PLAYER_COLORS: Array[Color] = [
+	Color(1.0, 0.6, 0.6),
+	Color(0.6, 0.8, 1.0),
+	Color(0.6, 1.0, 0.7),
+	Color(1.0, 1.0, 0.6),
+]
 var movement_direction: Vector2
 var current_anim: String
 
@@ -43,6 +49,7 @@ func setup_player() -> void:
 			var scene_path: String = get_tree().current_scene.scene_file_path
 			if not scene_path.is_empty() and GamePacketHandler.can_send_to_host():
 				SceneSyncPacket.create(owner_id, scene_path).send(GamePacketHandler.host_peer)
+	animation.modulate = PLAYER_COLORS[owner_id % PLAYER_COLORS.size()]
 
 func _physics_process(_delta: float) -> void:
 	if get_viewport().gui_get_focus_owner() is LineEdit:

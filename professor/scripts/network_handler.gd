@@ -28,7 +28,7 @@ func handle_events() -> void:
 				print("Packet received error")
 			ENetConnection.EVENT_CONNECT:
 				on_peer_connected.emit()
-				peer_sender.set_timeout(0, 3600000, 3600000)
+				peer_sender.set_timeout(0, 10000, 10000)
 			ENetConnection.EVENT_DISCONNECT:
 				client_disconnection()
 				return

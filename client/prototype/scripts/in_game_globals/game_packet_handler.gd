@@ -39,11 +39,11 @@ func handle_events() -> void:
 				if is_host:
 					player_connected(peer_sender)
 					#Debug timeout
-					peer_sender.set_timeout(0, 3600000, 3600000)
+					peer_sender.set_timeout(0, 10000, 10000)
 				else:
 					player_connection(peer_sender)
 					#Debug timeout
-					peer_sender.set_timeout(0, 3600000, 3600000)
+					peer_sender.set_timeout(0, 10000, 10000)
 			ENetConnection.EVENT_DISCONNECT:
 				if is_host:
 					peer_disconnected(peer_sender)

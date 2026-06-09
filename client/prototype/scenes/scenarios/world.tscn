@@ -1010,10 +1010,30 @@ shape = SubResource("RectangleShape2D_lakw3")
 
 [node name="CanvasLayer" parent="." unique_id=509079986 instance=ExtResource("10_us8y6")]
 
-[node name="PauseLayer" type="CanvasLayer" parent="."]
+[node name="HintLayer" type="CanvasLayer" parent="." unique_id=700000001]
+layer = 5
+
+[node name="HintPanel" type="PanelContainer" parent="HintLayer" unique_id=700000002]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -260.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = 60.0
+grow_horizontal = 0
+
+[node name="HintLabel" type="Label" parent="HintLayer/HintPanel" unique_id=700000003]
+custom_minimum_size = Vector2(220, 32)
+layout_mode = 2
+text = "Vá até o computador na cafeteria para iniciar o jogo"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PauseLayer" type="CanvasLayer" parent="." unique_id=1996183194]
 process_mode = 3
 layer = 10
 
-[node name="PauseControl" parent="PauseLayer" instance=ExtResource("11_pause")]
+[node name="PauseControl" parent="PauseLayer" unique_id=639220021 instance=ExtResource("11_pause")]
 
 [connection signal="finished" from="BgGame" to="BgGame" method="_on_finished"]

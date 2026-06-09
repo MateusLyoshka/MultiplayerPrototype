@@ -25,7 +25,7 @@ func handle_events() -> void:
 			ENetConnection.EVENT_CONNECT:
 				peer_connected(peer_sender)
 				# Debug timeout — mesmo valor de antes para testes longos.
-				peer_sender.set_timeout(0, 3600000, 3600000)
+				peer_sender.set_timeout(0, 10000, 10000)
 			ENetConnection.EVENT_DISCONNECT:
 				peer_disconnected(peer_sender)
 			ENetConnection.EVENT_RECEIVE:
