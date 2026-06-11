@@ -76,7 +76,7 @@ func _stats_open(role: String) -> void:
 	if _stats_file == null:
 		push_error("[stats] open failed: %s" % path)
 		return
-	_stats_file.store_line("timestamp,peer,rtt_ms,packet_loss_pct,packets_sent,packets_lost")
+	_stats_file.store_line("timestamp,peer,rtt_ms,last_rtt_ms,packet_loss_pct")
 	print("[stats] gravando em ", ProjectSettings.globalize_path(path))
 
 # [TCC eval] amostra a cada _STATS_INTERVAL_S segundos.
@@ -95,11 +95,11 @@ func _stats_tick(delta: float, peers: Array) -> void:
 		if peer.get_state() != ENetPacketPeer.STATE_CONNECTED:
 			continue
 		var label := str(peer.get_meta("id")) if peer.has_meta("id") else "peer"
-		var rtt := peer.get_statistic(ENetPacketPeer.PEER_ROUND_TRIP_TIME)
-		var loss := peer.get_statistic(ENetPacketPeer.PEER_PACKET_LOSS)
-		var sent := peer.get_statistic(ENetPacketPeer.PEER_PACKETS_SENT)
-		var lost := peer.get_statistic(ENetPacketPeer.PEER_PACKETS_LOST)
-		_stats_file.store_line("%d,%s,%.1f,%.4f,%d,%d" % [
-			ts, label, rtt, (loss / 65535.0) * 100.0, int(sent), int(lost)
+		# get_statistic devolve Variant; tipagem explicita evita "cannot infer".
+		var rtt: float = peer.get_statistic(ENetPacketPeer.PEER_ROUND_TRIP_TIME)
+		var last_rtt: float = peer.get_statistic(ENetPacketPeer.PEER_LAST_ROUND_TRIP_TIME)
+		var loss: float = peer.get_statistic(ENetPacketPeer.PEER_PACKET_LOSS)
+		_stats_file.store_line("%d,%s,%.1f,%.1f,%.4f" % [
+			ts, label, rtt, last_rtt, (loss / 65535.0) * 100.0
 		])
 	_stats_file.flush()
