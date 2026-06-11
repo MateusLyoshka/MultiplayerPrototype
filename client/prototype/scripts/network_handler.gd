@@ -8,13 +8,20 @@ var server_connection: ENetConnection
 var server_peer: ENetPacketPeer
 var server_ip: String = ""
 
+# [TCC eval] log periodico de RTT/perda em user://enet_stats_client_lobby_<unix>.csv.
+const _STATS_INTERVAL_S: float = 1.0
+var _stats_file: FileAccess
+var _stats_accum: float = 0.0
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if server_connection == null:
 		return
 	handle_events()
+	if server_peer != null:
+		_stats_tick(delta, [server_peer])
 
 func handle_events() -> void:
 	var packet_event: Array = server_connection.service()
@@ -44,16 +51,54 @@ func start_client(ip_address: String, port: int) -> void:
 		return
 	server_ip = ip_address
 	server_peer = server_connection.connect_to_host(ip_address, port)
+	# Sem isso, o handshake desiste só apos ~30s (default ENet) quando o IP esta errado.
+	server_peer.set_timeout(0, 5000, 10000)
 
 func client_connection() -> void:
+	_stats_open("client_lobby")
 	on_peer_connected.emit()
 
+# Chamado tanto em disconnect explícito quanto no timeout (caminho de IP errado).
+# Volta sempre ao menu para evitar UI travada em "Conectando..." indefinidamente.
 func client_disconnection() -> void:
-	if server_peer.get_state() == ENetPacketPeer.STATE_DISCONNECTED:
-		print("Connection timeout")
-		server_peer = null
-		server_connection = null
-		get_tree().change_scene_to_file("res://prototype/scenes/menu/mainMenu.tscn")
-		on_connection_error.emit()
-	else:
-		print("Connection timeout with server state: ", server_peer.get_state())
+	print("Connection ended (state: %d)" % server_peer.get_state())
+	server_peer = null
+	server_connection = null
+	_stats_file = null
+	get_tree().change_scene_to_file("res://prototype/scenes/menu/mainMenu.tscn")
+	on_connection_error.emit()
+
+# [TCC eval] abre arquivo de estatisticas para o papel atual.
+func _stats_open(role: String) -> void:
+	var path := "user://enet_stats_%s_%d.csv" % [role, int(Time.get_unix_time_from_system())]
+	_stats_file = FileAccess.open(path, FileAccess.WRITE)
+	if _stats_file == null:
+		push_error("[stats] open failed: %s" % path)
+		return
+	_stats_file.store_line("timestamp,peer,rtt_ms,packet_loss_pct,packets_sent,packets_lost")
+	print("[stats] gravando em ", ProjectSettings.globalize_path(path))
+
+# [TCC eval] amostra a cada _STATS_INTERVAL_S segundos.
+# PEER_PACKET_LOSS escala 0..65535 (=100%); normalizamos para porcentagem.
+func _stats_tick(delta: float, peers: Array) -> void:
+	if _stats_file == null:
+		return
+	_stats_accum += delta
+	if _stats_accum < _STATS_INTERVAL_S:
+		return
+	_stats_accum = 0.0
+	var ts := int(Time.get_unix_time_from_system())
+	for peer in peers:
+		if peer == null:
+			continue
+		if peer.get_state() != ENetPacketPeer.STATE_CONNECTED:
+			continue
+		var label := str(peer.get_meta("id")) if peer.has_meta("id") else "peer"
+		var rtt := peer.get_statistic(ENetPacketPeer.PEER_ROUND_TRIP_TIME)
+		var loss := peer.get_statistic(ENetPacketPeer.PEER_PACKET_LOSS)
+		var sent := peer.get_statistic(ENetPacketPeer.PEER_PACKETS_SENT)
+		var lost := peer.get_statistic(ENetPacketPeer.PEER_PACKETS_LOST)
+		_stats_file.store_line("%d,%s,%.1f,%.4f,%d,%d" % [
+			ts, label, rtt, (loss / 65535.0) * 100.0, int(sent), int(lost)
+		])
+	_stats_file.flush()

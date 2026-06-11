@@ -20,6 +20,8 @@ var last_sent_position: Vector2
 
 var owner_id: int
 var is_host: bool
+# Só a instância dona deste id lê input e emite movimento.
+# As outras 3 instâncias são marionetes movidas via pacotes.
 var is_authority: bool:
 	get: return owner_id == ClientPacketHandler.my_id
 
@@ -67,6 +69,8 @@ func _physics_process(_delta: float) -> void:
 		time_since_last_packet = 0
 		#print(is_host)
 		#print("(Player) is host? spawned ids size? ", is_host, ClientPacketHandler.spawned_ids.size() )
+		# Host broadcasta direto (autoridade). Player só unicasta ao host,
+		# que vai rebroadcastar pros demais (ver player_movement_packet_handler).
 		if is_host && ClientPacketHandler.spawned_ids.size() > 1:
 			PlayerDataPacket.create(owner_id, global_position, animation.animation).broadcast(GamePacketHandler.host_connection)
 			#print("host: ", GamePacketHandler.host_peer)
@@ -91,9 +95,11 @@ func animate() -> void:
 		Vector2.ZERO:
 			animation.play("idle")
 
+# Host recebe movimento de um player: aplica local E rebroadcasta. ENet não
+# devolve broadcast ao remetente, então o autor original não recebe duplicata.
 func player_movement_packet_handler(data: PackedByteArray) -> void:
 	var packet: PlayerDataPacket = PlayerDataPacket.create_from_data(data)
-	
+
 	if packet.id != owner_id:
 		return
 	#print("Player pos: ", packet.position)
@@ -102,6 +108,7 @@ func player_movement_packet_handler(data: PackedByteArray) -> void:
 	PlayerDataPacket.create(owner_id, packet.position, animation.animation).broadcast(GamePacketHandler.host_connection)
 
 func host_movement_packet_handler(data: PackedByteArray) -> void:
+	# Eu autoritativo ignoro a versão broadcast — minha posição já é a fonte da verdade.
 	if is_authority: return
 	var packet: PlayerDataPacket = PlayerDataPacket.create_from_data(data)
 	if packet.id != owner_id:

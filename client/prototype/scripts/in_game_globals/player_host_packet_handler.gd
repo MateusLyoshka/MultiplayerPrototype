@@ -17,6 +17,9 @@ signal host_minigame_grade_signal(data: PackedByteArray)
 
 var is_host: bool
 
+# Conecta APENAS um lado por instância: host OU player, nunca os dois.
+# Se conectasse ambos, cada pacote dispararia o handler duas vezes
+# (host_packet_handler entende SCENE_FORCE_PACKET, player_packet_handler não).
 func setup_packet_handler() -> void:
 	is_host = GamePacketHandler.is_host
 	if is_host:

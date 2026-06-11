@@ -4,6 +4,9 @@ extends Area2D
 @export_file("*.tscn") var target_scene: String
 
 func _on_body_entered(body: Node) -> void:
+	# Player está nos groups "player" (singular, do .tscn) e "players" (plural,
+	# adicionado em runtime). Aqui filtramos por "player"; client_packet_handler
+	# usa "players" pra despawn. Renomear qualquer um quebra um dos lados.
 	if body.is_in_group("player"):
 		if not body.get("is_authority"):
 			return

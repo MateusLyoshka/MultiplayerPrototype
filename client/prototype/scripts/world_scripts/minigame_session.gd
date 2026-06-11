@@ -16,7 +16,6 @@ const QUIZ_JSON_PATH := "res://prototype/data/minigame_quiz.json"
 @onready var team_hud: VBoxContainer = $"../TeamHUD"
 @onready var timer_label: Label = $"../TeamHUD/TimerLabel"
 @onready var progress_label: Label = $"../TeamHUD/ProgressLabel"
-@onready var score_label: Label = $"../TeamHUD/ScoreLabel"
 @onready var team_info_label: Label = $"../TeamHUD/TeamInfoLabel"
 
 var quiz_data: Dictionary = {}
@@ -334,7 +333,5 @@ func _update_team_info_label() -> void:
 func _refresh_hud_labels() -> void:
 	if my_finished:
 		progress_label.text = "Concluído (%d/%d)" % [total_questions, total_questions]
-		score_label.text = "Respostas: %d/%d enviadas" % [total_questions, total_questions]
 	else:
 		progress_label.text = "Pergunta %d de %d" % [my_question_idx + 1, total_questions]
-		score_label.text = "Respostas: %d/%d enviadas" % [my_question_idx, total_questions]

@@ -7,8 +7,10 @@ func _ready() -> void:
 	# Define a cena inicial assim que o jogo começa
 	current_scene_path = get_tree().current_scene.scene_file_path
 
+# Ponto ÚNICO de troca de cena durante o jogo. Chamar
+# get_tree().change_scene_to_file direto não dispara SCENE_SYNC e os outros
+# clientes ficam sem saber em que cena este player está.
 func goto_scene(path: String) -> void:
-	# Esta função será chamada pela porta
 	call_deferred("_deferred_goto_scene", path)
 
 # Door exports são salvos pelo editor como "uid://..."; mas scene_file_path

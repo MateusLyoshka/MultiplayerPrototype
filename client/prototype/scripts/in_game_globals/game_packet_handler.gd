@@ -1,5 +1,9 @@
 extends Node
 
+# Layer 2 (in-game) - ENetConnection separada do lobby (Layer 1, ProtNetworkHandler).
+# As duas camadas são totalmente independentes: enums de pacote, autoload,
+# signals e base classes não se cruzam. Mantém o gameplay fora do servidor central.
+
 # Host player signals
 signal game_scripts_setup(is_host: bool)
 
@@ -20,12 +24,21 @@ var avaliable_player_ids: Array = range(3, -1, -1)
 var host_peer: ENetPacketPeer
 var is_connected_to_host: bool = false
 
+# [TCC eval] log periodico de RTT/perda em user://enet_stats_game_<role>_<unix>.csv.
+const _STATS_INTERVAL_S: float = 1.0
+var _stats_file: FileAccess
+var _stats_accum: float = 0.0
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if host_connection == null: return
 	handle_events()
+	if is_host:
+		_stats_tick(delta, host_connection.get_peers())
+	elif host_peer != null:
+		_stats_tick(delta, [host_peer])
 
 func handle_events() -> void:
 	var packet_event: Array = host_connection.service()
@@ -61,6 +74,8 @@ func handle_events() -> void:
 		packet_event = host_connection.service()
 		event_type = packet_event[0]
 
+# create_host_bound: aceita conexões de entrada na porta sorteada.
+# is_host=true muda a rota dos eventos de receive (from_player_packet).
 func start_host(ip_address: String = "127.0.0.1", port: int = 42069) -> void:
 	host_connection = ENetConnection.new()
 	var error: Error = host_connection.create_host_bound(ip_address, port)
@@ -72,6 +87,7 @@ func start_host(ip_address: String = "127.0.0.1", port: int = 42069) -> void:
 		is_host = true
 		is_connected_to_host = false
 		PlayerHostPacketHandler.setup_packet_handler()
+		_stats_open("game_host")
 
 func player_connected(_peer: ENetPacketPeer) -> void:
 	print("(Game network) new player connected")
@@ -85,6 +101,8 @@ func peer_disconnected(peer: ENetPacketPeer) -> void:
 	
 	print("(Game network) Peer: ", player_id, " successfully disconnected")
 
+# create_host(1): só um peer outbound (o host da sala).
+# is_host=false roteia receives via from_host_packet.
 func start_player(ip_address: String, port: int) -> void:
 	var client_connection = ENetConnection.new()
 	var error: Error = client_connection.create_host(1)
@@ -96,6 +114,7 @@ func start_player(ip_address: String, port: int) -> void:
 	is_connected_to_host = false
 	host_peer = client_connection.connect_to_host(ip_address, port)
 	PlayerHostPacketHandler.setup_packet_handler()
+	_stats_open("game_player")
 	game_scripts_setup.emit(is_host)
 
 func player_connection(peer: ENetPacketPeer) -> void:
@@ -120,3 +139,39 @@ func cleanup_connection() -> void:
 	is_host = false
 	host_peer = null
 	host_connection = null
+	_stats_file = null
+
+# [TCC eval] abre arquivo de estatisticas para o papel atual.
+func _stats_open(role: String) -> void:
+	var path := "user://enet_stats_%s_%d.csv" % [role, int(Time.get_unix_time_from_system())]
+	_stats_file = FileAccess.open(path, FileAccess.WRITE)
+	if _stats_file == null:
+		push_error("[stats] open failed: %s" % path)
+		return
+	_stats_file.store_line("timestamp,peer,rtt_ms,packet_loss_pct,packets_sent,packets_lost")
+	print("[stats] gravando em ", ProjectSettings.globalize_path(path))
+
+# [TCC eval] amostra a cada _STATS_INTERVAL_S segundos.
+# PEER_PACKET_LOSS escala 0..65535 (=100%); normalizamos para porcentagem.
+func _stats_tick(delta: float, peers: Array) -> void:
+	if _stats_file == null:
+		return
+	_stats_accum += delta
+	if _stats_accum < _STATS_INTERVAL_S:
+		return
+	_stats_accum = 0.0
+	var ts := int(Time.get_unix_time_from_system())
+	for peer in peers:
+		if peer == null:
+			continue
+		if peer.get_state() != ENetPacketPeer.STATE_CONNECTED:
+			continue
+		var label := str(peer.get_meta("id")) if peer.has_meta("id") else "peer"
+		var rtt := peer.get_statistic(ENetPacketPeer.PEER_ROUND_TRIP_TIME)
+		var loss := peer.get_statistic(ENetPacketPeer.PEER_PACKET_LOSS)
+		var sent := peer.get_statistic(ENetPacketPeer.PEER_PACKETS_SENT)
+		var lost := peer.get_statistic(ENetPacketPeer.PEER_PACKETS_LOST)
+		_stats_file.store_line("%d,%s,%.1f,%.4f,%d,%d" % [
+			ts, label, rtt, (loss / 65535.0) * 100.0, int(sent), int(lost)
+		])
+	_stats_file.flush()

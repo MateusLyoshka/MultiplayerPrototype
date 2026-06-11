@@ -1,7 +1,7 @@
-[gd_scene load_steps=4 format=3 uid="uid://dxaa1eoj6frw5"]
+[gd_scene format=3 uid="uid://dxaa1eoj6frw5"]
 
 [ext_resource type="PackedScene" uid="uid://dnnk20ejw87e6" path="res://prototype/scenes/in_game_reusables/pause_control.tscn" id="1_pause"]
-[ext_resource type="Script" path="res://prototype/scripts/world_scripts/minigame_session.gd" id="2_session"]
+[ext_resource type="Script" uid="uid://bq8mb46quqygb" path="res://prototype/scripts/world_scripts/minigame_session.gd" id="2_session"]
 [ext_resource type="PackedScene" uid="uid://nos1s3ei7bbe" path="res://prototype/scenes/in_game_reusables/chat.tscn" id="3_chat"]
 
 [node name="MinigameQuiz" type="Control" unique_id=920000001]
@@ -9,12 +9,16 @@ layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="Background" type="ColorRect" parent="." unique_id=920000002]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 color = Color(0.12, 0.13, 0.2, 1)
 
 [node name="Title" type="Label" parent="." unique_id=920000003]
@@ -23,6 +27,7 @@ anchors_preset = 10
 anchor_right = 1.0
 offset_top = 16.0
 offset_bottom = 56.0
+grow_horizontal = 2
 text = "Desafio cooperativo"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -38,6 +43,8 @@ offset_left = -260.0
 offset_top = -20.0
 offset_right = 260.0
 offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
 text = "Aguardando atribuicao do host..."
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -51,9 +58,11 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -420.0
-offset_top = -260.0
+offset_top = -180.0
 offset_right = 420.0
-offset_bottom = 260.0
+offset_bottom = 180.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="VBox" type="VBoxContainer" parent="DocumentPanel" unique_id=920000021]
 layout_mode = 2
@@ -64,12 +73,9 @@ text = "Documento"
 horizontal_alignment = 1
 
 [node name="DocumentText" type="RichTextLabel" parent="DocumentPanel/VBox" unique_id=920000023]
-custom_minimum_size = Vector2(0, 460)
+custom_minimum_size = Vector2(0, 300)
 layout_mode = 2
 size_flags_vertical = 3
-bbcode_enabled = false
-scroll_active = true
-fit_content = false
 
 [node name="QuizPanel" type="PanelContainer" parent="." unique_id=920000030]
 visible = false
@@ -83,6 +89,8 @@ offset_left = -360.0
 offset_top = -180.0
 offset_right = 360.0
 offset_bottom = 180.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="VBox" type="VBoxContainer" parent="QuizPanel" unique_id=920000031]
 layout_mode = 2
@@ -110,6 +118,7 @@ offset_left = -260.0
 offset_top = 16.0
 offset_right = -16.0
 offset_bottom = 120.0
+grow_horizontal = 0
 
 [node name="TimerLabel" type="Label" parent="TeamHUD" unique_id=920000041]
 layout_mode = 2
@@ -119,10 +128,6 @@ text = "Tempo: 0s"
 layout_mode = 2
 text = "Pergunta 0 de 0"
 
-[node name="ScoreLabel" type="Label" parent="TeamHUD" unique_id=920000043]
-layout_mode = 2
-text = "Acertos: 0  Erros: 0"
-
 [node name="TeamInfoLabel" type="Label" parent="TeamHUD" unique_id=920000044]
 layout_mode = 2
 text = "Dupla: -"
@@ -130,10 +135,10 @@ text = "Dupla: -"
 [node name="MinigameSession" type="Node" parent="." unique_id=920000050]
 script = ExtResource("2_session")
 
-[node name="Chat" parent="." instance=ExtResource("3_chat")]
+[node name="Chat" parent="." unique_id=242768736 instance=ExtResource("3_chat")]
 
-[node name="PauseLayer" type="CanvasLayer" parent="."]
+[node name="PauseLayer" type="CanvasLayer" parent="." unique_id=1432893083]
 process_mode = 3
 layer = 10
 
-[node name="PauseControl" parent="PauseLayer" instance=ExtResource("1_pause")]
+[node name="PauseControl" parent="PauseLayer" unique_id=771523826 instance=ExtResource("1_pause")]

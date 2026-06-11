@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" uid="uid://ci6u83ijv46vq" path="res://prototype/scenes/in_game_reusables/doorArea.tscn" id="13_s6d8l"]
 [ext_resource type="PackedScene" uid="uid://dxb8r5pmk0cqc" path="res://prototype/scenes/in_game_reusables/minigame_starter.tscn" id="14_mgst"]
 [ext_resource type="PackedScene" uid="uid://dnnk20ejw87e6" path="res://prototype/scenes/in_game_reusables/pause_control.tscn" id="15_pause"]
+[ext_resource type="PackedScene" uid="uid://nos1s3ei7bbe" path="res://prototype/scenes/in_game_reusables/chat.tscn" id="16_chat"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_0n48d"]
 texture = ExtResource("3_7ywh3")
@@ -215,6 +216,8 @@ target_scene = "uid://co71tgl480phx"
 
 [node name="MinigameStarter" parent="." unique_id=900100200 instance=ExtResource("14_mgst")]
 position = Vector2(489, 18)
+
+[node name="Chat" parent="." unique_id=1864914426 instance=ExtResource("16_chat")]
 
 [node name="PauseLayer" type="CanvasLayer" parent="." unique_id=1129703670]
 process_mode = 3

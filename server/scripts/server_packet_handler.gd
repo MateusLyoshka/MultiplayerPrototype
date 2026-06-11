@@ -1,5 +1,7 @@
 extends Node
 
+# range(255,-1,-1) + pop_back() devolve room_ids em ordem crescente (0,1,2...).
+# Quando uma sala fecha, o id volta pra num_room e fica disponivel pra reuso.
 var num_room: Array = range(255, -1, -1)
 var created_rooms_id: Array[int]
 var rooms: Dictionary[int, RoomStorage]
@@ -21,6 +23,8 @@ func _ready() -> void:
 	refresh_timer.timeout.connect(_on_refresh_tick)
 	add_child(refresh_timer)
 
+# Push periodico de refresh pra quem está no lobby (não está em sala nem é o
+# professor). Players in-game não precisam — a lista mudaria sob eles.
 func _on_refresh_tick() -> void:
 	for peer in ProtNetworkHandler.peers_connected.values():
 		if not peer.get_meta("in_room", false):
