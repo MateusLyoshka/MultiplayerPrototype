@@ -1,48 +1,33 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Coletor de metricas no cliente (aluno ou professor) - TCC Cyber Resistance.
+# Versao SEM sudo (Linux Mint do laboratorio, sem privilegios elevados).
 #
-# Roda numa maquina Linux que esta executando o Godot do cliente.
-# Inicia o Godot ANTES de rodar este script (precisa achar o processo).
+# Inicia o Godot ANTES de rodar este script (pgrep precisa achar o processo).
 #
 # Uso:
-#   sudo apt install nethogs tshark         # uma vez
-#   chmod +x eval_scripts/collect_client.sh # uma vez
-#   sudo eval_scripts/collect_client.sh [label]
+#   chmod +x eval_scripts/collect_client.sh
+#   eval_scripts/collect_client.sh [label]   # default "client"
 #
-# Parametros:
-#   label   rotulo da pasta de saida. Use "host", "aluno01", "professor"...
-#           Default: "client".
+# Sugestao de labels:
+#   host           # cliente cujo my_id % 4 == 0 (cria a sala)
+#   aluno01..N     # demais clientes
+#   professor      # cliente do professor
 #
 # Para interromper: Ctrl+C. Os arquivos sao fechados corretamente.
 #
 # Saidas em eval_results/<label>_<timestamp>/ :
-#   meta.txt        - timestamps de inicio/fim (unix + ISO), label, hostname
-#   cpu_mem.csv     - amostragem 1Hz: timestamp,pid,cpu_pct,rss_kb,cmd
-#                     (cpu_pct = % de um nucleo, pode passar de 100 em multithread)
-#   nethogs.log     - banda por processo (-t)
-#   capture.pcapng  - captura de TODO trafego UDP da maquina
-#                     (filtra-se depois no Wireshark, ja que a porta Layer 2
-#                      do host e sorteada por get_random_port())
+#   meta.txt        - timestamps de inicio/fim, label, hostname
+#   cpu_mem.csv     - CPU%/RSS do(s) processo(s) Godot, 1Hz (via ps)
+#   net_iface.csv   - bytes e pacotes por interface, 1Hz (via /proc/net/dev)
 #
-# Como extrair cada metrica do TCC (apos a sessao):
-#   - Banda media/pico por processo: nethogs.log
-#   - PPS:              Wireshark > Statistics > I/O Graph (Y = packets/s)
-#   - Tamanho medio:    Wireshark > Statistics > Packet Lengths
-#   - Categoria (in-game): filtro por primeiro byte do payload UDP, ex.:
-#                       udp.payload[0] == 00  (PLAYER_PACKET)
-#                       udp.payload[0] == 0a  (TEXT_PACKET)
-#                       udp.payload[0] == 0b  (SCENE_SYNC_PACKET)
-#                       udp.payload[0] == 0c  (SCENE_FORCE_PACKET)
-#                       udp.payload[0] == 14  (MINIGAME_ASSIGN)
-#                       udp.payload[0] == 15  (MINIGAME_ANSWER)
-#                       udp.payload[0] == 16  (MINIGAME_PROGRESS)
-#                       udp.payload[0] == 17  (MINIGAME_GRADE_RESULT)
-#                       Tabela completa em
-#                       client/prototype/scripts/in_game_packets/base/player_base.gd
-#   - CPU/memoria:      cpu_mem.csv -> Excel/Python
-#   - Fases da sessao:  anote em paralelo (em outro terminal) os timestamps
-#                       Unix das transicoes com  date +%s  e fatie o CSV depois.
+# LIMITACOES (versao sem sudo):
+#   - Banda eh POR INTERFACE, nao por processo. Como na sessao de teste so
+#     o Godot trafega volume significativo, a banda da interface aproxima a
+#     do processo.
+#   - Sem captura de pacotes (tshark precisa de CAP_NET_RAW). RTT/perda
+#     saem do log interno do Godot em ~/.local/share/godot/app_userdata/<projeto>/
+#     enet_stats_*.csv.
 # =============================================================================
 
 set -u
@@ -52,16 +37,6 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SESS="${LABEL}_$(date +%Y%m%d_%H%M%S)"
 OUT="$ROOT/eval_results/$SESS"
 mkdir -p "$OUT"
-
-require() {
-    command -v "$1" >/dev/null 2>&1 || {
-        echo "[!] '$1' nao encontrado no PATH. Instale antes de rodar." >&2
-        exit 1
-    }
-}
-require nethogs
-require tshark
-require pgrep
 
 echo "[*] sessao: $SESS"
 echo "[*] saida:  $OUT"
@@ -74,11 +49,12 @@ echo "[*] saida:  $OUT"
 } > "$OUT/meta.txt"
 
 # -- CPU/memoria 1Hz --
+# pgrep -f casa tanto o binario exportado ("Cyber Resistance...") quanto o editor.
 {
     echo "timestamp,pid,cpu_pct,rss_kb,cmd"
     while true; do
         ts=$(date +%s)
-        pgrep -f "godot" | while read -r pid; do
+        pgrep -f "Resistance|[Gg]odot" | while read -r pid; do
             ps -p "$pid" -o pid=,pcpu=,rss=,comm= 2>/dev/null \
                 | awk -v t="$ts" 'NF{print t","$1","$2","$3","$4}'
         done
@@ -87,22 +63,43 @@ echo "[*] saida:  $OUT"
 } > "$OUT/cpu_mem.csv" 2>/dev/null &
 PID_CM=$!
 
-# -- Banda por processo --
-nethogs -t -d 1 > "$OUT/nethogs.log" 2>/dev/null &
-PID_NH=$!
-
-# -- Captura de pacotes (todo UDP) --
-# Sem filtro de porta porque a porta da camada in-game eh sorteada por
-# get_random_port() em start_room. A separacao Layer 1 / Layer 2 fica para
-# a analise pos-sessao, pelo IP/porta de origem-destino.
-tshark -i any -f "udp" -w "$OUT/capture.pcapng" >/dev/null 2>&1 &
-PID_TS=$!
+# -- Banda/pacotes por interface 1Hz (delta de /proc/net/dev) --
+# Formato de /proc/net/dev (linhas a partir da 3a):
+#   "  eth0: <rx_bytes> <rx_packets> ... <tx_bytes> <tx_packets> ..."
+# Pegamos rx_bytes ($1), rx_packets ($2), tx_bytes ($9), tx_packets ($10)
+# e gravamos o delta entre amostras consecutivas (= bytes/s e pacotes/s).
+{
+    echo "timestamp,iface,rx_bps,rx_pps,tx_bps,tx_pps"
+    declare -A prev_rx_b prev_rx_p prev_tx_b prev_tx_p
+    while true; do
+        ts=$(date +%s)
+        while IFS= read -r line; do
+            [[ "$line" =~ ^[[:space:]]*([^:]+):[[:space:]]+(.+)$ ]] || continue
+            iface="${BASH_REMATCH[1]// /}"
+            [[ "$iface" == "lo" ]] && continue
+            vals="${BASH_REMATCH[2]}"
+            read -r rx_b rx_p _ _ _ _ _ _ tx_b tx_p _ <<< "$vals"
+            if [[ -n "${prev_rx_b[$iface]:-}" ]]; then
+                printf "%d,%s,%d,%d,%d,%d\n" "$ts" "$iface" \
+                    "$((rx_b - prev_rx_b[$iface]))" \
+                    "$((rx_p - prev_rx_p[$iface]))" \
+                    "$((tx_b - prev_tx_b[$iface]))" \
+                    "$((tx_p - prev_tx_p[$iface]))"
+            fi
+            prev_rx_b[$iface]=$rx_b
+            prev_rx_p[$iface]=$rx_p
+            prev_tx_b[$iface]=$tx_b
+            prev_tx_p[$iface]=$tx_p
+        done < /proc/net/dev
+        sleep 1
+    done
+} > "$OUT/net_iface.csv" 2>/dev/null &
+PID_NI=$!
 
 cleanup() {
     echo
     echo "[*] parando coleta..."
-    # SIGTERM faz o tshark finalizar o pcapng corretamente.
-    kill -TERM "$PID_CM" "$PID_NH" "$PID_TS" 2>/dev/null
+    kill -TERM "$PID_CM" "$PID_NI" 2>/dev/null
     wait 2>/dev/null
     {
         echo "end_unix=$(date +%s)"
